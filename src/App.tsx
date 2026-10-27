@@ -14,7 +14,7 @@ import {
   Heart,
 } from "lucide-react";
 
-// ===== Import your images from src/assets =====
+
 import heroImage from "./assets/hero-toys.png";
 import softToysImg from "./assets/soft-toys.jpg";
 import carsImg from "./assets/cars.jpg";
@@ -28,8 +28,8 @@ import buildingBlockImg from "./assets/building-block.jpg";
 import puzzle from "./assets/puzzle.jpg"
 import educationalToy from "./assets/educational_toy.jpg"
 import doll from "./assets/doll.jpg"
+import { useCart } from "./hooks/useCart";
 
-// ===== Categories =====
 export const categories = [
   {
     name: "Soft Toys",
@@ -69,7 +69,7 @@ export const categories = [
   },
 ];
 
-// ===== Products =====
+
 export const products = [
   {
     id: 1,
@@ -143,15 +143,13 @@ export const products = [
 function App() {
   const [search, setSearch] = useState("");
   const [mobileMenu, setMobileMenu] = useState(false);
-  const [cart, setCart] = useState<number[]>([]);
+  
 
-  const addToCart = (id: number) => {
-    setCart((prev) => [...prev, id]);
-  };
+ const { addToCart, cartCount } = useCart();
 
   return (
     <div className="min-h-screen bg-white text-[#14284D]">
-      {/* Announcement bar */}
+      
       <div className="bg-[#14284D] px-4 py-2 text-center text-xs font-medium text-white">
         <span className="font-bold text-[#7FE3FF]">FREE SHIPPING</span> on orders
         over Rs. 5,000
@@ -159,7 +157,7 @@ function App() {
         Special toys, special memories ✨
       </div>
 
-      {/* Navigation */}
+      
       <header className="sticky top-0 z-30 border-b border-slate-100 bg-white">
         <div className="mx-auto flex max-w-[1320px] items-center gap-5 px-4 py-3 sm:px-6">
           <a href="#" className="flex shrink-0 items-center gap-2">
@@ -204,12 +202,17 @@ function App() {
             <span className="hidden xl:inline">Login / Register</span>
           </button>
 
-          <button className="relative rounded-lg p-2 hover:bg-orange-50">
-            <ShoppingCart size={21} />
-            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white">
-              {cart.length}
-            </span>
-          </button>
+          <Link
+             to="/cart"
+             aria-label={`Shopping cart, ${cartCount} items`}
+             className="relative rounded-lg p-2 hover:bg-orange-50"
+>
+             <ShoppingCart size={21} />
+
+             <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white">
+                   {cartCount}
+             </span>
+           </Link>
 
           <button
             className="rounded-lg p-2 lg:hidden"
@@ -240,7 +243,7 @@ function App() {
         )}
       </header>
 
-      {/* Hero */}
+      
       <section className="relative overflow-hidden bg-gradient-to-r from-[#FFF1D9] via-[#FFF8EA] to-[#FFD19B]">
         <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-orange-300/30 blur-3xl" />
         <div className="mx-auto grid min-h-[360px] max-w-[1320px] items-center gap-8 px-6 py-12 md:grid-cols-2 md:py-10">
@@ -304,7 +307,7 @@ function App() {
         </div>
       </section>
 
-      {/* Categories */}
+      
       <section id="categories" className="mx-auto max-w-7xl px-4 py-12">
         <div className="mb-8 flex items-center justify-between">
           <div>
@@ -343,7 +346,7 @@ function App() {
         </div>
       </section>
 
-      {/* Best Sellers */}
+     
       <section id="products" className="mx-auto max-w-7xl px-4 py-12">
         <div className="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div>
@@ -437,12 +440,28 @@ function App() {
                     )}
                   </div>
 
-                  <button
-                    onClick={() => addToCart(product.id)}
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-500 text-white shadow-sm transition hover:bg-orange-600"
-                  >
-                    <ShoppingCart size={14} />
-                  </button>
+                  
+                 
+           <button
+             type="button"
+             onClick={() => {
+             addToCart({
+             id: product.id,
+             name: product.name,
+             price: product.price,
+             image: product.image,
+              });
+
+              console.log("Added to cart:", product.name);
+              }}
+             aria-label={`Add ${product.name} to cart`}
+             title="Add to cart"
+             className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-500 text-white shadow-sm transition hover:bg-orange-600"
+>
+            <ShoppingCart size={14} />
+            </button>
+
+
                 </div>
               </div>
             </div>
@@ -450,7 +469,7 @@ function App() {
         </div>
       </section>
 
-      {/* Footer */}
+      
       <footer id="about" className="bg-white">
         <div className="mx-auto flex max-w-[1320px] flex-col justify-between gap-4 px-6 py-7 sm:flex-row sm:items-center">
           <a href="#" className="text-xl font-black">
