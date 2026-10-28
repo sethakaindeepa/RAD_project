@@ -154,7 +154,7 @@ export default function Home() {
       
 
       <header className="sticky top-0 z-30 border-b border-slate-100 bg-white">
-        <div className="mx-auto flex max-w-[1320px] items-center gap-5 px-4 py-3 sm:px-6">
+        <div className="mx-auto flex max-w-330 items-center gap-5 px-4 py-3 sm:px-6">
           <Link to="/" className="flex shrink-0 items-center gap-2">
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 text-2xl">
               🧸
@@ -244,10 +244,10 @@ export default function Home() {
         )}
       </header>
 
-      <section className="relative overflow-hidden bg-gradient-to-r from-[#FFF1D9] via-[#FFF8EA] to-[#FFD19B]">
+      <section className="relative overflow-hidden bg-linear-to-r from-[#FFF1D9] via-[#FFF8EA] to-[#FFD19B]">
         <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-orange-300/30 blur-3xl" />
 
-        <div className="mx-auto grid min-h-[360px] max-w-[1320px] items-center gap-8 px-6 py-12 md:grid-cols-2 md:py-10">
+        <div className="mx-auto grid min-h-90 max-w-330 items-center gap-8 px-6 py-12 md:grid-cols-2 md:py-10">
           <div className="relative z-10">
             <p className="text-sm font-extrabold uppercase tracking-wide text-orange-600">
               Welcome to ToyLand!
@@ -291,7 +291,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="relative flex min-h-[280px] items-center justify-center md:min-h-[340px]">
+          <div className="relative flex min-h-70 items-center justify-center md:min-h-85">
             <div className="absolute right-3 top-4 z-10 rotate-6 text-center text-orange-600">
               <p className="text-xl font-black italic sm:text-2xl">Small toys</p>
               <p className="text-xl font-black italic sm:text-2xl">Big dreams ♡</p>
@@ -300,7 +300,7 @@ export default function Home() {
               <img
                 src={heroImage}
                 alt="Teddy bear surrounded by colorful toys"
-                className="h-[300px] w-full object-cover md:h-[360px]"
+                className="h-75 w-full object-cover md:h-90"
               />
             </div>
           </div>
@@ -436,7 +436,7 @@ export default function Home() {
       </section>
 
       <footer id="about" className="bg-white">
-        <div className="mx-auto flex max-w-[1320px] flex-col justify-between gap-4 px-6 py-7 sm:flex-row sm:items-center">
+        <div className="mx-auto flex max-w-330 flex-col justify-between gap-4 px-6 py-7 sm:flex-row sm:items-center">
           <Link to="/" className="text-xl font-black">
             Toy<span className="text-orange-500">Land</span> 🧸
           </Link>
