@@ -151,12 +151,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white text-[#14284D]">
-      <div className="bg-[#14284D] px-4 py-2 text-center text-xs font-medium text-white">
-        <span className="font-bold text-[#7FE3FF]">FREE SHIPPING</span>{" "}
-        on orders over Rs. 5,000
-        <span className="mx-3 text-slate-500">|</span>
-        Special toys, special memories ✨
-      </div>
+      
 
       <header className="sticky top-0 z-30 border-b border-slate-100 bg-white">
         <div className="mx-auto flex max-w-[1320px] items-center gap-5 px-4 py-3 sm:px-6">
