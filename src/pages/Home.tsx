@@ -2,15 +2,15 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Search,
+  
   ShoppingCart,
-  UserRound,
+  
   Truck,
   ShieldCheck,
   Headset,
   ArrowRight,
-  Menu,
-  X,
+  
+
   Star,
   Heart,
 } from "lucide-react";
@@ -142,8 +142,8 @@ export const products = [
 
 export default function Home() {
   const [search, setSearch] = useState("");
-  const [mobileMenu, setMobileMenu] = useState(false);
-  const { addToCart, cartCount } = useCart();
+  
+  const { addToCart} = useCart();
 
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(search.toLowerCase())
@@ -153,96 +153,7 @@ export default function Home() {
     <div className="min-h-screen bg-white text-[#14284D]">
       
 
-      <header className="sticky top-0 z-30 border-b border-slate-100 bg-white">
-        <div className="mx-auto flex max-w-330 items-center gap-5 px-4 py-3 sm:px-6">
-          <Link to="/" className="flex shrink-0 items-center gap-2">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 text-2xl">
-              🧸
-            </span>
-            <span className="text-2xl font-black tracking-tight">
-              Toy<span className="text-orange-500">Land</span>
-            </span>
-          </Link>
-
-          <div className="relative ml-4 hidden max-w-sm flex-1 md:block">
-            <Search
-              size={18}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500"
-            />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search for toys, games and more..."
-              className="w-full rounded-full bg-slate-100/80 py-3 pl-11 pr-4 text-xs outline-none focus:ring-2 focus:ring-orange-200"
-            />
-          </div>
-
-          <nav className="ml-auto hidden items-center gap-7 text-xs font-semibold lg:flex">
-            <Link to="/" className="border-b-2 border-orange-500 py-2 text-orange-500">
-              Home
-            </Link>
-            <Link to="/shop" className="py-2 hover:text-orange-500">
-              Shop Toys
-            </Link>
-            <Link to="/shop?category=blocks" className="py-2 hover:text-orange-500">
-              Categories
-            </Link>
-            <a href="#about" className="py-2 hover:text-orange-500">
-              About
-            </a>
-          </nav>
-
-          <Link
-            to="/login"
-            className="hidden items-center gap-2 text-xs font-semibold sm:flex"
-          >
-            <UserRound size={19} />
-            <span className="hidden xl:inline">Login / Register</span>
-          </Link>
-
-          <Link
-            to="/cart"
-            aria-label={`Shopping cart, ${cartCount} items`}
-            className="relative rounded-lg p-2 hover:bg-orange-50"
-          >
-            <ShoppingCart size={21} />
-            {cartCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white">
-                {cartCount}
-              </span>
-            )}
-          </Link>
-
-          <button
-            type="button"
-            aria-label="Toggle navigation menu"
-            className="rounded-lg p-2 lg:hidden"
-            onClick={() => setMobileMenu((open) => !open)}
-          >
-            {mobileMenu ? <X size={21} /> : <Menu size={21} />}
-          </button>
-        </div>
-
-        {mobileMenu && (
-          <div className="border-t border-slate-100 bg-white p-4 lg:hidden">
-            <div className="relative mb-4">
-              <Search size={18} className="absolute left-3 top-3 text-orange-500" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search toys..."
-                className="w-full rounded-xl bg-slate-100 p-3 pl-10 text-sm outline-none"
-              />
-            </div>
-            <div className="flex flex-col gap-4 text-sm font-semibold">
-              <Link to="/" onClick={() => setMobileMenu(false)}>Home</Link>
-              <Link to="/shop" onClick={() => setMobileMenu(false)}>Shop Toys</Link>
-              <Link to="/shop?category=blocks" onClick={() => setMobileMenu(false)}>Categories</Link>
-              <a href="#about" onClick={() => setMobileMenu(false)}>About</a>
-            </div>
-          </div>
-        )}
-      </header>
+      
 
       <section className="relative overflow-hidden bg-linear-to-r from-[#FFF1D9] via-[#FFF8EA] to-[#FFD19B]">
         <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-orange-300/30 blur-3xl" />
@@ -350,6 +261,16 @@ export default function Home() {
             </p>
             <h2 className="mt-1 text-3xl font-bold text-gray-800">Best Sellers</h2>
           </div>
+        </div>
+        
+        <div className="mb-8 w-full max-w-md">
+        <input
+         type="text"
+         value={search}
+         onChange={(e) => setSearch(e.target.value)}
+         placeholder="Search toys..."
+         className="w-full rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+         />
         </div>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">

@@ -22,13 +22,23 @@ export default function Header() {
           />
         </div>
 
-        <nav className="ml-auto hidden items-center gap-7 font-semibold lg:flex">
-          <Link to="/" className="text-orange-600">Home</Link>
-          <Link to="/shop">Shop Toys</Link>
-          <Link to="/shop?category=blocks">Categories</Link>
-          <a href="#about">About</a>
-          <Link to="/login">Login / Register</Link>
-        </nav>
+        <nav className="flex items-center gap-6">
+          <Link to="/" className="hover:text-orange-500">
+            Home
+          </Link>
+
+          <Link to="/products" className="hover:text-orange-500">
+            Products
+          </Link>
+
+          <Link to="/login" className="hover:text-orange-500">
+            Login/Register
+          </Link>
+
+          <Link to="/cart" className="hover:text-orange-500">
+            Cart
+          </Link>
+          </nav>
 
         <Link to="/cart" className="relative shrink-0 p-2">
           <ShoppingCart size={27} />
