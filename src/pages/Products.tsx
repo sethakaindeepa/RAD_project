@@ -1,95 +1,29 @@
-
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Search,
   ShoppingCart,
   SlidersHorizontal,
   Star,
   PackageOpen,
+  Plus,
+  Pencil,
+  Trash2,
+  X,
 } from "lucide-react";
 
 import { useCart } from "../hooks/useCart";
 import Button from "../components/common/Button";
 
-import teddyBear from "../assets/teady-bear.jpg";
-import remoteControlCar from "../assets/remote-control car.jpg";
-import buildingBlocks from "../assets/building-block.jpg";
-import animalPuzzle from "../assets/puzzle.jpg";
-import microscopeKit from "../assets/educational_toy.jpg";
-import princessDoll from "../assets/doll.jpg";
+import {
+  getProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  type Product,
+  type CreateProductData,
+} from "../services/products";
 
-type Product = {
-  id: number;
-  name: string;
-  price: number;
-  oldPrice?: number;
-  category: string;
-  image: string;
-  rating: number;
-  reviews: number;
-  badge?: string;
-};
-
-const products: Product[] = [
-  {
-    id: 1,
-    name: "Teddy Bear",
-    price: 2500,
-    category: "Soft Toys",
-    image: teddyBear,
-    rating: 4.8,
-    reviews: 120,
-    badge: "Popular",
-  },
-  {
-    id: 2,
-    name: "Remote Control Car",
-    price: 4990,
-    oldPrice: 5900,
-    category: "Cars & Vehicles",
-    image: remoteControlCar,
-    rating: 4.7,
-    reviews: 85,
-    badge: "Sale",
-  },
-  {
-    id: 3,
-    name: "Building Blocks Set",
-    price: 3200,
-    category: "Building Blocks",
-    image: buildingBlocks,
-    rating: 4.6,
-    reviews: 64,
-  },
-  {
-    id: 4,
-    name: "Animal Puzzle",
-    price: 2800,
-    category: "Puzzles & Games",
-    image: animalPuzzle,
-    rating: 4.5,
-    reviews: 42,
-  },
-  {
-    id: 5,
-    name: "Science Microscope Kit",
-    price: 5500,
-    category: "Educational Toys",
-    image: microscopeKit,
-    rating: 4.9,
-    reviews: 38,
-    badge: "Educational",
-  },
-  {
-    id: 6,
-    name: "Princess Doll",
-    price: 3900,
-    category: "Dolls & Figures",
-    image: princessDoll,
-    rating: 4.7,
-    reviews: 57,
-  },
-];
+type SortOption = "featured" | "price-low" | "price-high" | "name";
 
 const categories = [
   "All Categories",
@@ -101,20 +35,81 @@ const categories = [
   "Dolls & Figures",
 ];
 
-type SortOption = "featured" | "price-low" | "price-high" | "name";
-
 function formatPrice(price: number) {
   return `Rs. ${price.toLocaleString("en-LK")}`;
 }
 
+const emptyForm: CreateProductData = {
+  name: "",
+  description: "",
+  price: 0,
+  category: "Soft Toys",
+  image: "",
+  stock: 0,
+};
+
 export default function Products() {
   const { addToCart } = useCart();
 
+  // Products
+  const [products, setProducts] = useState<Product[]>([]);
+
+  // Loading/error
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // Search/filter
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] =
     useState("All Categories");
+
   const [sortOption, setSortOption] =
     useState<SortOption>("featured");
+
+  // Modal
+  const [showForm, setShowForm] = useState(false);
+
+  // Editing
+  const [editingProduct, setEditingProduct] =
+    useState<Product | null>(null);
+
+  // Form
+  const [formData, setFormData] =
+    useState<CreateProductData>(emptyForm);
+
+  // Saving
+  const [saving, setSaving] = useState(false);
+
+  // Delete
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // --------------------------------------------------
+  // GET PRODUCTS
+  // --------------------------------------------------
+
+  async function loadProducts() {
+    try {
+      setLoading(true);
+      setError("");
+
+      const data = await getProducts();
+
+      setProducts(data);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load products.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  // --------------------------------------------------
+  // SEARCH / FILTER / SORT
+  // --------------------------------------------------
 
   const filteredProducts = useMemo(() => {
     let result = products.filter((product) => {
@@ -141,7 +136,9 @@ export default function Products() {
         break;
 
       case "name":
-        result.sort((a, b) => a.name.localeCompare(b.name));
+        result.sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
         break;
 
       default:
@@ -149,41 +146,228 @@ export default function Products() {
     }
 
     return result;
-  }, [searchTerm, selectedCategory, sortOption]);
+  }, [
+    products,
+    searchTerm,
+    selectedCategory,
+    sortOption,
+  ]);
+
+  // --------------------------------------------------
+  // ADD TO CART
+  // --------------------------------------------------
 
   function handleAddToCart(product: Product) {
     addToCart({
-      id: product.id,
+      id: product._id,
       name: product.name,
       price: product.price,
       image: product.image,
     });
   }
 
+  // --------------------------------------------------
+  // OPEN ADD FORM
+  // --------------------------------------------------
+
+  function openAddForm() {
+    setEditingProduct(null);
+    setFormData(emptyForm);
+    setShowForm(true);
+  }
+
+  // --------------------------------------------------
+  // OPEN EDIT FORM
+  // --------------------------------------------------
+
+  function openEditForm(product: Product) {
+    setEditingProduct(product);
+
+    setFormData({
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      category: product.category,
+      image: product.image,
+      stock: product.stock,
+    });
+
+    setShowForm(true);
+  }
+
+  // --------------------------------------------------
+  // FORM CHANGE
+  // --------------------------------------------------
+
+  function handleInputChange(
+    event: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) {
+    const { name, value } = event.target;
+
+    setFormData((previous) => ({
+      ...previous,
+      [name]:
+        name === "price" || name === "stock"
+          ? Number(value)
+          : value,
+    }));
+  }
+
+  // --------------------------------------------------
+  // CREATE / UPDATE
+  // --------------------------------------------------
+
+  async function handleSubmit(
+    event: React.FormEvent<HTMLFormElement>
+  ) {
+    event.preventDefault();
+
+    try {
+      setSaving(true);
+      setError("");
+
+      if (editingProduct) {
+        // UPDATE
+        const updatedProduct = await updateProduct(
+          editingProduct._id,
+          formData
+        );
+
+        setProducts((previous) =>
+          previous.map((product) =>
+            product._id === editingProduct._id
+              ? updatedProduct
+              : product
+          )
+        );
+      } else {
+        // CREATE
+        const newProduct = await createProduct(formData);
+
+        setProducts((previous) => [
+          newProduct,
+          ...previous,
+        ]);
+      }
+
+      setShowForm(false);
+      setEditingProduct(null);
+      setFormData(emptyForm);
+    } catch (err) {
+      console.error(err);
+      setError(
+        editingProduct
+          ? "Failed to update product."
+          : "Failed to create product."
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // --------------------------------------------------
+  // DELETE
+  // --------------------------------------------------
+
+  async function handleDelete(id: string) {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this product?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setDeletingId(id);
+      setError("");
+
+      await deleteProduct(id);
+
+      setProducts((previous) =>
+        previous.filter((product) => product._id !== id)
+      );
+    } catch (err) {
+      console.error(err);
+      setError("Failed to delete product.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  // --------------------------------------------------
+  // LOADING
+  // --------------------------------------------------
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-lg font-semibold text-gray-600">
+          Loading toys...
+        </p>
+      </div>
+    );
+  }
+
+  // --------------------------------------------------
+  // PAGE
+  // --------------------------------------------------
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Page heading */}
+
+      {/* HEADER */}
       <section className="bg-orange-50 px-4 py-12 sm:py-16">
-        <div className="mx-auto max-w-7xl text-center">
-          <p className="font-semibold uppercase tracking-widest text-orange-600">
-            Explore ToyLand
-          </p>
+        <div className="mx-auto max-w-7xl">
 
-          <h1 className="mt-3 text-3xl font-extrabold text-gray-900 sm:text-5xl">
-            Find Your Next Favourite Toy
-          </h1>
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
 
-          <p className="mx-auto mt-4 max-w-2xl text-gray-600">
-            Discover toys that inspire imagination, creativity,
-            and hours of fun.
-          </p>
+            <div>
+              <p className="font-semibold uppercase tracking-widest text-orange-600">
+                Explore ToyLand
+              </p>
+
+              <h1 className="mt-3 text-3xl font-extrabold text-gray-900 sm:text-5xl">
+                Find Your Next Favourite Toy
+              </h1>
+
+              <p className="mt-4 max-w-2xl text-gray-600">
+                Discover toys that inspire imagination,
+                creativity, and hours of fun.
+              </p>
+            </div>
+
+            {/* ADD PRODUCT */}
+            <Button
+              type="button"
+              onClick={openAddForm}
+              className="flex items-center justify-center gap-2 md:w-auto"
+            >
+              <Plus size={18} />
+              Add Product
+            </Button>
+
+          </div>
         </div>
       </section>
 
-      {/* Products section */}
+      {/* ERROR */}
+      {error && (
+        <div className="mx-auto mt-6 max-w-7xl px-4">
+          <div className="rounded-xl bg-red-100 px-4 py-3 text-red-700">
+            {error}
+          </div>
+        </div>
+      )}
+
+      {/* PRODUCTS */}
       <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        {/* Search and sort */}
+
+        {/* SEARCH / SORT */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+
           <div className="relative w-full md:max-w-md">
             <Search
               size={20}
@@ -193,22 +377,23 @@ export default function Products() {
             <input
               type="search"
               value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
+              onChange={(event) =>
+                setSearchTerm(event.target.value)
+              }
               placeholder="Search toys by name..."
-              aria-label="Search products"
-              className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-12 pr-4 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+              className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-12 pr-4 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
             />
           </div>
 
           <div className="flex items-center gap-3">
             <SlidersHorizontal
               size={20}
-              className="shrink-0 text-gray-500"
+              className="text-gray-500"
             />
 
             <label
               htmlFor="sortProducts"
-              className="shrink-0 text-sm font-medium text-gray-600"
+              className="text-sm font-medium text-gray-600"
             >
               Sort by:
             </label>
@@ -217,25 +402,40 @@ export default function Products() {
               id="sortProducts"
               value={sortOption}
               onChange={(event) =>
-                setSortOption(event.target.value as SortOption)
+                setSortOption(
+                  event.target.value as SortOption
+                )
               }
-              className="min-w-0 flex-1 rounded-xl border border-gray-200 bg-white px-3 py-3 outline-none focus:border-orange-500 md:flex-none"
+              className="rounded-xl border border-gray-200 bg-white px-3 py-3 outline-none focus:border-orange-500"
             >
-              <option value="featured">Featured</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="name">Name: A to Z</option>
+              <option value="featured">
+                Featured
+              </option>
+
+              <option value="price-low">
+                Price: Low to High
+              </option>
+
+              <option value="price-high">
+                Price: High to Low
+              </option>
+
+              <option value="name">
+                Name: A to Z
+              </option>
             </select>
           </div>
         </div>
 
-        {/* Category filters */}
+        {/* CATEGORIES */}
         <div className="mt-7 flex gap-3 overflow-x-auto pb-3">
           {categories.map((category) => (
             <button
               key={category}
               type="button"
-              onClick={() => setSelectedCategory(category)}
+              onClick={() =>
+                setSelectedCategory(category)
+              }
               className={`shrink-0 rounded-full px-5 py-2.5 text-sm font-semibold transition ${
                 selectedCategory === category
                   ? "bg-orange-500 text-white shadow-sm"
@@ -247,7 +447,7 @@ export default function Products() {
           ))}
         </div>
 
-        {/* Result count */}
+        {/* RESULT COUNT */}
         <div className="mb-6 mt-5 flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-900">
             Our Toys
@@ -255,19 +455,25 @@ export default function Products() {
 
           <p className="text-sm text-gray-500">
             {filteredProducts.length}{" "}
-            {filteredProducts.length === 1 ? "product" : "products"}
+            {filteredProducts.length === 1
+              ? "product"
+              : "products"}
           </p>
         </div>
 
-        {/* Product grid */}
+        {/* PRODUCT GRID */}
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+
             {filteredProducts.map((product) => (
               <article
-                key={product.id}
+                key={product._id}
                 className="group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
               >
+
+                {/* IMAGE */}
                 <div className="relative flex h-60 items-center justify-center overflow-hidden bg-gray-100">
+
                   <img
                     src={product.image}
                     alt={product.name}
@@ -275,23 +481,11 @@ export default function Products() {
                     className="h-full w-full object-contain p-4 transition duration-300 group-hover:scale-105"
                   />
 
-                  {product.badge && (
-                    <span className="absolute left-3 top-3 rounded-full bg-orange-500 px-3 py-1 text-xs font-bold text-white">
-                      {product.badge}
-                    </span>
-                  )}
-
-                  {product.oldPrice && (
-                    <span className="absolute right-3 top-3 rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-600">
-                      {Math.round(
-                        (1 - product.price / product.oldPrice) * 100
-                      )}
-                      % OFF
-                    </span>
-                  )}
                 </div>
 
+                {/* CONTENT */}
                 <div className="p-5">
+
                   <p className="text-xs font-semibold uppercase tracking-wide text-orange-600">
                     {product.category}
                   </p>
@@ -300,48 +494,101 @@ export default function Products() {
                     {product.name}
                   </h3>
 
-                  <div className="mt-2 flex items-center gap-2">
-                    <Star
-                      size={16}
-                      fill="currentColor"
-                      className="text-amber-400"
-                    />
+                  {/* RATING */}
+                  {product.rating !== undefined && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <Star
+                        size={16}
+                        fill="currentColor"
+                        className="text-amber-400"
+                      />
 
-                    <span className="text-sm font-semibold text-gray-700">
-                      {product.rating}
-                    </span>
+                      <span className="text-sm font-semibold text-gray-700">
+                        {product.rating}
+                      </span>
 
-                    <span className="text-sm text-gray-400">
-                      ({product.reviews} reviews)
-                    </span>
-                  </div>
+                      {product.reviews !== undefined && (
+                        <span className="text-sm text-gray-400">
+                          ({product.reviews} reviews)
+                        </span>
+                      )}
+                    </div>
+                  )}
 
-                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                  {/* PRICE */}
+                  <div className="mt-4">
                     <span className="text-xl font-extrabold text-gray-900">
                       {formatPrice(product.price)}
                     </span>
-
-                    {product.oldPrice && (
-                      <span className="text-sm text-gray-400 line-through">
-                        {formatPrice(product.oldPrice)}
-                      </span>
-                    )}
                   </div>
 
+                  {/* STOCK */}
+                  <p
+                    className={`mt-2 text-sm font-medium ${
+                      product.stock > 0
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {product.stock > 0
+                      ? `${product.stock} in stock`
+                      : "Out of stock"}
+                  </p>
+
+                  {/* CART */}
                   <Button
                     type="button"
-                    className="mt-5 flex w-full items-center justify-center gap-2"
-                    onClick={() => handleAddToCart(product)}
+                    disabled={product.stock === 0}
+                    className="mt-4 flex w-full items-center justify-center gap-2"
+                    onClick={() =>
+                      handleAddToCart(product)
+                    }
                   >
                     <ShoppingCart size={18} />
                     Add to Cart
                   </Button>
+
+                  {/* CRUD BUTTONS */}
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        openEditForm(product)
+                      }
+                      className="flex items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-100"
+                    >
+                      <Pencil size={16} />
+                      Edit
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={
+                        deletingId === product._id
+                      }
+                      onClick={() =>
+                        handleDelete(product._id)
+                      }
+                      className="flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-100 disabled:opacity-50"
+                    >
+                      <Trash2 size={16} />
+
+                      {deletingId === product._id
+                        ? "Deleting..."
+                        : "Delete"}
+                    </button>
+
+                  </div>
+
                 </div>
               </article>
             ))}
+
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-4 py-16 text-center">
+
             <PackageOpen
               size={48}
               className="mx-auto text-gray-400"
@@ -355,21 +602,202 @@ export default function Products() {
               Try another search term or category.
             </p>
 
-            <Button
-              type="button"
-              variant="secondary"
-              className="mt-5"
-              onClick={() => {
-                setSearchTerm("");
-                setSelectedCategory("All Categories");
-                setSortOption("featured");
-              }}
-            >
-              Clear Filters
-            </Button>
           </div>
         )}
+
       </section>
+
+      {/* ADD / EDIT MODAL */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
+
+            {/* MODAL HEADER */}
+            <div className="flex items-center justify-between">
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {editingProduct
+                    ? "Edit Product"
+                    : "Add New Product"}
+                </h2>
+
+                <p className="mt-1 text-sm text-gray-500">
+                  {editingProduct
+                    ? "Update the toy details."
+                    : "Add a new toy to ToyLand."}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="rounded-full p-2 text-gray-500 hover:bg-gray-100"
+              >
+                <X size={22} />
+              </button>
+
+            </div>
+
+            {/* FORM */}
+            <form
+              onSubmit={handleSubmit}
+              className="mt-6 space-y-5"
+            >
+
+              {/* NAME */}
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-gray-700">
+                  Toy Name
+                </label>
+
+                <input
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                  placeholder="Enter toy name"
+                />
+              </div>
+
+              {/* DESCRIPTION */}
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-gray-700">
+                  Description
+                </label>
+
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  required
+                  rows={3}
+                  className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                  placeholder="Enter toy description"
+                />
+              </div>
+
+              {/* PRICE / STOCK */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-gray-700">
+                    Price (Rs.)
+                  </label>
+
+                  <input
+                    type="number"
+                    name="price"
+                    value={formData.price}
+                    onChange={handleInputChange}
+                    min="0"
+                    required
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-orange-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-gray-700">
+                    Stock
+                  </label>
+
+                  <input
+                    type="number"
+                    name="stock"
+                    value={formData.stock}
+                    onChange={handleInputChange}
+                    min="0"
+                    required
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-orange-500"
+                  />
+                </div>
+
+              </div>
+
+              {/* CATEGORY */}
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-gray-700">
+                  Category
+                </label>
+
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-orange-500"
+                >
+                  {categories
+                    .filter(
+                      (category) =>
+                        category !== "All Categories"
+                    )
+                    .map((category) => (
+                      <option
+                        key={category}
+                        value={category}
+                      >
+                        {category}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              {/* IMAGE */}
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-gray-700">
+                  Image URL
+                </label>
+
+                <input
+                  type="text"
+                  name="image"
+                  value={formData.image}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-orange-500"
+                  placeholder="/assets/teddy-bear.jpg"
+                />
+
+                <p className="mt-1 text-xs text-gray-500">
+                  Example: /assets/teddy-bear.jpg
+                </p>
+              </div>
+
+              {/* BUTTONS */}
+              <div className="flex justify-end gap-3 pt-3">
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowForm(false)
+                  }
+                  className="rounded-lg border border-gray-300 px-5 py-3 font-semibold text-gray-600 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+
+                <Button
+                  type="submit"
+                  disabled={saving}
+                >
+                  {saving
+                    ? "Saving..."
+                    : editingProduct
+                    ? "Update Product"
+                    : "Add Product"}
+                </Button>
+
+              </div>
+
+            </form>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

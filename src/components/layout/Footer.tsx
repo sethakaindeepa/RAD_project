@@ -11,12 +11,12 @@ import { FaFacebook, FaInstagram } from "react-icons/fa";
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300">
+    <footer className="bg-[#FFF8E7] text-gray-800 py-10 px-5">
       <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <Link to="/" className="flex items-center gap-2">
             <ShoppingBag className="h-8 w-8 text-orange-500" />
-            <span className="text-2xl font-extrabold text-white">
+            <span className="text-2xl font-extrabold text-black">
               Toy<span className="text-orange-500">Land</span>
             </span>
           </Link>
@@ -39,7 +39,7 @@ export default function Footer() {
         </div>
 
         <div>
-          <h3 className="mb-4 font-bold text-white">Quick Links</h3>
+          <h3 className="mb-4 font-bold text-black">Quick Links</h3>
           <ul className="space-y-3 text-sm">
             <li><Link to="/" className="hover:text-orange-400">Home</Link></li>
             <li><Link to="/products" className="hover:text-orange-400">Products</Link></li>
@@ -49,7 +49,7 @@ export default function Footer() {
         </div>
 
         <div>
-          <h3 className="mb-4 font-bold text-white">Customer Service</h3>
+          <h3 className="mb-4 font-bold text-black">Customer Service</h3>
           <ul className="space-y-3 text-sm">
             <li><Link to="/shipping" className="hover:text-orange-400">Shipping Information</Link></li>
             <li><Link to="/returns" className="hover:text-orange-400">Returns & Refunds</Link></li>
@@ -59,7 +59,7 @@ export default function Footer() {
         </div>
 
         <div>
-          <h3 className="mb-4 font-bold text-white">Contact Us</h3>
+          <h3 className="mb-4 font-bold text-black">Contact Us</h3>
           <ul className="space-y-4 text-sm">
             <li className="flex items-start gap-3">
               <MapPin size={18} className="mt-1 shrink-0 text-orange-400" />

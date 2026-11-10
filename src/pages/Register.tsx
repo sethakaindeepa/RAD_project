@@ -1,9 +1,11 @@
 
 import { useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, ShoppingBag } from "lucide-react";
 
 export default function Register() {
+  const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -11,12 +13,18 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError("");
 
+    setError("");
+    setSuccess("");
+
+    // Frontend validation
     if (password.length < 8) {
       setError("Password must contain at least 8 characters.");
       return;
@@ -27,8 +35,56 @@ export default function Register() {
       return;
     }
 
-    
-    setError("Your form is valid. Backend registration is not connected yet.");
+    try {
+      setLoading(true);
+
+      // Connect to ToyLand backend
+      const response = await fetch(
+        "http://localhost:3000/api/v1/auth/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: fullName,
+            email: email,
+            password: password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Registration failed. Please try again."
+        );
+      }
+
+      // Registration successful
+      setSuccess("Account created successfully! Redirecting to login...");
+
+      // Clear form
+      setFullName("");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+
+      // Go to login after 1.5 seconds
+      setTimeout(() => {
+        navigate("/");
+      }, 1500);
+
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -36,6 +92,7 @@ export default function Register() {
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl sm:p-10">
         <Link to="/" className="mb-5 flex items-center justify-center gap-2">
           <ShoppingBag className="h-9 w-9 text-orange-500" />
+
           <span className="text-3xl font-extrabold text-gray-900">
             Toy<span className="text-orange-500">Land</span>
           </span>
@@ -50,10 +107,16 @@ export default function Register() {
         </p>
 
         <form onSubmit={handleSubmit} className="mt-7 space-y-4">
+
+          {/* Full Name */}
           <div>
-            <label htmlFor="fullName" className="mb-2 block text-sm font-semibold text-gray-700">
+            <label
+              htmlFor="fullName"
+              className="mb-2 block text-sm font-semibold text-gray-700"
+            >
               Full name
             </label>
+
             <input
               id="fullName"
               type="text"
@@ -66,10 +129,15 @@ export default function Register() {
             />
           </div>
 
+          {/* Email */}
           <div>
-            <label htmlFor="email" className="mb-2 block text-sm font-semibold text-gray-700">
+            <label
+              htmlFor="email"
+              className="mb-2 block text-sm font-semibold text-gray-700"
+            >
               Email address
             </label>
+
             <input
               id="email"
               type="email"
@@ -82,10 +150,15 @@ export default function Register() {
             />
           </div>
 
+          {/* Password */}
           <div>
-            <label htmlFor="password" className="mb-2 block text-sm font-semibold text-gray-700">
+            <label
+              htmlFor="password"
+              className="mb-2 block text-sm font-semibold text-gray-700"
+            >
               Password
             </label>
+
             <div className="relative">
               <input
                 id="password"
@@ -98,21 +171,33 @@ export default function Register() {
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 pr-12 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
                 required
               />
+
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-label={
+                  showPassword ? "Hide password" : "Show password"
+                }
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-orange-500"
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showPassword ? (
+                  <EyeOff size={20} />
+                ) : (
+                  <Eye size={20} />
+                )}
               </button>
             </div>
           </div>
 
+          {/* Confirm Password */}
           <div>
-            <label htmlFor="confirmPassword" className="mb-2 block text-sm font-semibold text-gray-700">
+            <label
+              htmlFor="confirmPassword"
+              className="mb-2 block text-sm font-semibold text-gray-700"
+            >
               Confirm password
             </label>
+
             <div className="relative">
               <input
                 id="confirmPassword"
@@ -124,39 +209,72 @@ export default function Register() {
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 pr-12 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
                 required
               />
+
               <button
                 type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                onClick={() =>
+                  setShowConfirmPassword(!showConfirmPassword)
+                }
+                aria-label={
+                  showConfirmPassword
+                    ? "Hide password"
+                    : "Show password"
+                }
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-orange-500"
               >
-                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showConfirmPassword ? (
+                  <EyeOff size={20} />
+                ) : (
+                  <Eye size={20} />
+                )}
               </button>
             </div>
           </div>
 
+          {/* Error */}
           {error && (
-            <p role="status" className="rounded-lg bg-orange-50 p-3 text-sm text-orange-700">
+            <p
+              role="alert"
+              className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
+            >
               {error}
             </p>
           )}
 
+          {/* Success */}
+          {success && (
+            <p
+              role="status"
+              className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
+            >
+              {success}
+            </p>
+          )}
+
+          {/* Submit */}
           <button
             type="submit"
-            className="w-full rounded-lg bg-orange-500 py-3 font-bold text-white transition hover:bg-orange-600"
+            disabled={loading}
+            className="w-full rounded-lg bg-orange-500 py-3 font-bold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Create Account
+            {loading ? "Creating Account..." : "Create Account"}
           </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-600">
           Already have an account?{" "}
-          <Link to="/login" className="font-bold text-orange-600 hover:underline">
+          <Link
+            to="/login"
+            className="font-bold text-orange-600 hover:underline"
+          >
             Sign in
           </Link>
         </p>
 
-        <Link to="/" className="mt-4 block text-center text-sm text-gray-500 hover:text-orange-600">
+        <Link
+          to="/"
+          className="mt-4 block text-center text-sm text-gray-500 hover:text-orange-600"
+        >
           ← Back to Home
         </Link>
       </div>

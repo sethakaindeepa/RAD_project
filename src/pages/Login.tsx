@@ -1,16 +1,20 @@
 
 import { useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, ShoppingBag } from "lucide-react";
 
 export default function Login() {
+  const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
     setError("");
 
     if (!email.trim() || !password) {
@@ -23,15 +27,97 @@ export default function Login() {
       return;
     }
 
-    
-    setError("The form is valid. Backend login is not connected yet.");
+   
+try {
+  setLoading(true);
+
+  
+  const response = await fetch(
+    "http://localhost:3000/api/v1/auth/login",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: email.trim(),
+        password: password,
+      }),
+    }
+  );
+
+  const responseData = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      responseData.message || "Invalid email or password."
+    );
+  }
+
+  // Get login response data
+  const result = responseData.data;
+
+  // Extract tokens
+  const accessToken = result.access_token;
+  const refreshToken = result.refresh_token;
+
+  if (!accessToken) {
+    throw new Error("Access token not received.");
+  }
+
+  
+  localStorage.setItem("token", accessToken);
+  localStorage.setItem("refreshToken", refreshToken);
+
+  
+  localStorage.setItem("email", result.email);
+  localStorage.setItem(
+    "role",
+    Array.isArray(result.roles)
+      ? result.roles.join(",")
+      : String(result.roles ?? "")
+  );
+   
+  
+  const userResponse = await fetch(
+    "http://localhost:3000/api/v1/auth/me",
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (userResponse.ok) {
+    const userData = await userResponse.json();
+    const user = userData.data;
+
+       localStorage.setItem("userId", user.id);
+       localStorage.setItem("userName", user.name);
+      }
+
+       
+       navigate("/homepage");
+
+      } catch (error) {
+       if (error instanceof Error) {
+       setError(error.message);
+      } else {
+    setError("Something went wrong. Please try again.");
+      }
+        } finally {
+          setLoading(false);
+     }
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-orange-50 px-4 py-10">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl sm:p-10">
+
         <Link to="/" className="mb-6 flex items-center justify-center gap-2">
           <ShoppingBag className="h-9 w-9 text-orange-500" />
+
           <span className="text-3xl font-extrabold text-gray-900">
             Toy<span className="text-orange-500">Land</span>
           </span>
@@ -46,10 +132,16 @@ export default function Login() {
         </p>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+
+          {/* Email */}
           <div>
-            <label htmlFor="email" className="mb-2 block text-sm font-semibold text-gray-700">
+            <label
+              htmlFor="email"
+              className="mb-2 block text-sm font-semibold text-gray-700"
+            >
               Email address
             </label>
+
             <input
               id="email"
               type="email"
@@ -62,8 +154,12 @@ export default function Login() {
             />
           </div>
 
+          {/* Password */}
           <div>
-            <label htmlFor="password" className="mb-2 block text-sm font-semibold text-gray-700">
+            <label
+              htmlFor="password"
+              className="mb-2 block text-sm font-semibold text-gray-700"
+            >
               Password
             </label>
 
@@ -85,35 +181,53 @@ export default function Login() {
                 aria-label={showPassword ? "Hide password" : "Show password"}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-orange-500"
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showPassword ? (
+                  <EyeOff size={20} />
+                ) : (
+                  <Eye size={20} />
+                )}
               </button>
             </div>
           </div>
 
+          {/* Error Message */}
           {error && (
-            <p role="status" className="rounded-lg bg-orange-50 p-3 text-sm text-orange-700">
+            <p
+              role="alert"
+              className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
+            >
               {error}
             </p>
           )}
 
+          {/* Submit Button */}
           <button
             type="submit"
-            className="w-full rounded-lg bg-orange-500 py-3 font-bold text-white transition hover:bg-orange-600"
+            disabled={loading}
+            className="w-full rounded-lg bg-orange-500 py-3 font-bold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Sign In
+            {loading ? "Signing In..." : "Sign In"}
           </button>
+
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-600">
           Don't have an account?{" "}
-          <Link to="/register" className="font-bold text-orange-600 hover:underline">
+          <Link
+            to="/register"
+            className="font-bold text-orange-600 hover:underline"
+          >
             Create an account
           </Link>
         </p>
 
-        <Link to="/" className="mt-5 block text-center text-sm text-gray-500 hover:text-orange-600">
+        <Link
+          to="/"
+          className="mt-5 block text-center text-sm text-gray-500 hover:text-orange-600"
+        >
           ← Back to Home
         </Link>
+
       </div>
     </div>
   );

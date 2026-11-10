@@ -47,7 +47,7 @@ export default function Cart() {
       </p>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-3">
-        {/* Cart Items */}
+        
         <div className="space-y-4 lg:col-span-2">
           {items.map((item) => (
             <article
@@ -127,7 +127,7 @@ export default function Cart() {
           ))}
         </div>
 
-        {/* Order Summary */}
+       
         <aside className="h-fit rounded-2xl border border-slate-200 p-6">
           <h2 className="text-xl font-extrabold text-slate-900">
             Order Summary

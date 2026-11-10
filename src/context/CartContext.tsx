@@ -7,7 +7,7 @@ import {
 } from "react";
 
 export type CartProduct = {
-  id: number;
+  id: string;
   name: string;
   price: number;
   image?: string;
@@ -18,13 +18,13 @@ export type CartItem = {
   quantity: number;
 };
 
-type CartContextType = {
+export type CartContextType = {
   items: CartItem[];
   cartCount: number;
   subtotal: number;
   addToCart: (product: CartProduct) => void;
-  removeFromCart: (id: number) => void;
-  updateQuantity: (id: number, quantity: number) => void;
+  removeFromCart: (id: string) => void;
+  updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
 };
 
@@ -40,16 +40,18 @@ export function CartProvider({
   const [items, setItems] = useState<CartItem[]>(() => {
     try {
       const saved = localStorage.getItem("toyland-cart");
-      return saved ? JSON.parse(saved) as CartItem[] : [];
+      return saved ? (JSON.parse(saved) as CartItem[]) : [];
     } catch {
       return [];
     }
   });
 
+  // Save cart items in localStorage
   useEffect(() => {
     localStorage.setItem("toyland-cart", JSON.stringify(items));
   }, [items]);
 
+  // ADD PRODUCT
   function addToCart(product: CartProduct) {
     setItems((current) => {
       const existing = current.find(
@@ -68,13 +70,15 @@ export function CartProvider({
     });
   }
 
-  function removeFromCart(id: number) {
+  // REMOVE PRODUCT
+  function removeFromCart(id: string) {
     setItems((current) =>
       current.filter((item) => item.product.id !== id)
     );
   }
 
-  function updateQuantity(id: number, quantity: number) {
+  // UPDATE QUANTITY
+  function updateQuantity(id: string, quantity: number) {
     if (quantity < 1) {
       removeFromCart(id);
       return;
@@ -89,15 +93,18 @@ export function CartProvider({
     );
   }
 
+  // CLEAR CART
   function clearCart() {
     setItems([]);
   }
 
+  // TOTAL ITEMS
   const cartCount = items.reduce(
     (total, item) => total + item.quantity,
     0
   );
 
+  // TOTAL PRICE
   const subtotal = items.reduce(
     (total, item) =>
       total + item.product.price * item.quantity,
