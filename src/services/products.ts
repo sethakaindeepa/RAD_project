@@ -1,5 +1,5 @@
 
-import api from "./api";
+import { apiFetch } from "./api";
 
 export interface Product {
   _id: string;
@@ -10,13 +10,10 @@ export interface Product {
   category: string;
   stock: number;
   isActive: boolean;
-
-  
   rating?: number;
   reviews?: number;
   oldPrice?: number;
   badge?: string;
-
   createdAt?: string;
   updatedAt?: string;
 }
@@ -30,75 +27,41 @@ export interface CreateProductData {
   stock: number;
 }
 
-
-function extractData<T>(response: any): T {
-  const data = response.data?.data ?? response.data;
-  return data;
-}
-
-
 export const getProducts = async (): Promise<Product[]> => {
-  const res = await api.get("/products");
-  const data = extractData<any>(res);
-
-  return Array.isArray(data)
-    ? data
-    : Array.isArray(data?.products)
-    ? data.products
-    : [];
+  const data = await apiFetch<{ products: Product[] }>("/products");
+  return data.products ?? [];
 };
 
-
-
-export const getProductById = async (
-  id: string
-): Promise<Product> => {
-  const res = await api.get(`/products/${id}`);
-  return extractData<Product>(res);
+export const getProductById = async (id: string): Promise<Product> => {
+  const data = await apiFetch<{ product: Product }>(`/products/${id}`);
+  return data.product;
 };
-
-
-export const searchProducts = async (
-  searchTerm: string
-): Promise<Product[]> => {
-  const res = await api.get("/products", {
-    params: { search: searchTerm },
-  });
-
-  return extractData<Product[]>(res);
-};
-
-
-export const getProductsByCategory = async (
-  category: string
-): Promise<Product[]> => {
-  const res = await api.get("/products", {
-    params: { category },
-  });
-
-  return extractData<Product[]>(res);
-};
-
 
 export const createProduct = async (
   product: CreateProductData
 ): Promise<Product> => {
-  const res = await api.post("/products", product);
-  return extractData<Product>(res);
-};
+  const data = await apiFetch<{ product: Product }>("/products", {
+    method: "POST",
+    body: JSON.stringify(product),
+  });
 
+  return data.product;
+};
 
 export const updateProduct = async (
   id: string,
   product: Partial<CreateProductData>
 ): Promise<Product> => {
-  const res = await api.put(`/products/${id}`, product);
-  return extractData<Product>(res);
+  const data = await apiFetch<{ product: Product }>(`/products/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(product),
+  });
+
+  return data.product;
 };
 
-
-export const deleteProduct = async (
-  id: string
-): Promise<void> => {
-  await api.delete(`/products/${id}`);
+export const deleteProduct = async (id: string): Promise<void> => {
+  await apiFetch<{ message: string }>(`/products/${id}`, {
+    method: "DELETE",
+  });
 };

@@ -8,6 +8,8 @@ import Register from "../pages/Register";
 import Cart from "../pages/Cart";
 import MainLayout from "../components/layout/MainLayout";
 import Shop from "../pages/Shop";
+import Checkout from "../pages/Checkout";
+import OrderSuccess from "../pages/OrderSuccess";
 
 function AppRouter() {
   return (
@@ -18,6 +20,8 @@ function AppRouter() {
         <Route path="/products" element={<Products />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/shop" element={<Shop />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/order-success" element={<OrderSuccess />} />
       </Route>
 
       

@@ -54,10 +54,10 @@ try {
     );
   }
 
-  // Get login response data
+ 
   const result = responseData.data;
 
-  // Extract tokens
+  
   const accessToken = result.access_token;
   const refreshToken = result.refresh_token;
 
@@ -133,7 +133,7 @@ try {
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-5">
 
-          {/* Email */}
+          
           <div>
             <label
               htmlFor="email"
@@ -154,7 +154,7 @@ try {
             />
           </div>
 
-          {/* Password */}
+          
           <div>
             <label
               htmlFor="password"
@@ -190,7 +190,7 @@ try {
             </div>
           </div>
 
-          {/* Error Message */}
+          
           {error && (
             <p
               role="alert"
@@ -200,7 +200,7 @@ try {
             </p>
           )}
 
-          {/* Submit Button */}
+          
           <button
             type="submit"
             disabled={loading}

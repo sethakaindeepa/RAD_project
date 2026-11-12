@@ -23,7 +23,7 @@ export default function Header() {
         </div>
 
         <nav className="flex items-center gap-6">
-          <Link to="/" className="hover:text-orange-500">
+          <Link to="/homepage" className="hover:text-orange-500">
             Home
           </Link>
 
@@ -31,7 +31,7 @@ export default function Header() {
             Products
           </Link>
 
-          <Link to="/login" className="hover:text-orange-500">
+          <Link to="/" className="hover:text-orange-500">
             Login/Register
           </Link>
 

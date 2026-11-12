@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
 import { useCart } from "../hooks/useCart";
+import { useNavigate } from "react-router-dom";
 
 export default function Cart() {
   const {
@@ -12,6 +13,8 @@ export default function Cart() {
     removeFromCart,
     updateQuantity,
   } = useCart();
+
+  const navigate = useNavigate();
 
   if (items.length === 0) {
     return (
@@ -157,11 +160,9 @@ export default function Cart() {
 
           <button
             type="button"
-            onClick={() =>
-              alert("Checkout will be implemented in the next step.")
-            }
+            onClick={() => navigate("/checkout")}
             className="mt-6 w-full rounded-xl bg-orange-600 px-5 py-3 font-bold text-white hover:bg-orange-700"
-          >
+             >
             Proceed to Checkout
           </button>
 

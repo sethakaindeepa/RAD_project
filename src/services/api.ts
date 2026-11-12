@@ -1,84 +1,120 @@
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-import axios, { AxiosError } from "axios";
-import type { InternalAxiosRequestConfig } from "axios";
-import { refreshTokenCall } from "././auth";
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
-});
-
-const PUBLIC_ENDPOINT = [
+const PUBLIC_ENDPOINTS = [
   "/auth/login",
   "/auth/register",
   "/auth/refresh",
 ];
 
+let refreshPromise: Promise<string> | null = null;
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("ACCESS_TOKEN");
+async function refreshAccessToken(): Promise<string> {
+  const refreshToken = localStorage.getItem("refreshToken");
 
-  const isPublic = PUBLIC_ENDPOINT.some((url) =>
-    config.url?.includes(url)
+  if (!refreshToken) {
+    throw new Error("No refresh token available");
+  }
+
+  const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ refreshToken }),
+  });
+
+  const responseData = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      responseData?.message || "Token refresh failed"
+    );
+  }
+
+  const data = responseData.data ?? responseData;
+
+  const newAccessToken =
+    data.accessToken ?? data.access_token;
+
+  const newRefreshToken =
+    data.refreshToken ?? data.refresh_token;
+
+  if (!newAccessToken) {
+    throw new Error("Access token missing in refresh response");
+  }
+
+  localStorage.setItem("accessToken", newAccessToken);
+
+  if (newRefreshToken) {
+    localStorage.setItem("refreshToken", newRefreshToken);
+  }
+
+  return newAccessToken;
+}
+
+export async function apiFetch<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const url = `${API_BASE_URL.replace(/\/$/, "")}${endpoint}`;
+
+  const headers = new Headers(options.headers);
+
+  if (options.body && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  const isPublic = PUBLIC_ENDPOINTS.some((path) =>
+    endpoint.includes(path)
   );
 
-  if (token && !isPublic) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  const sendRequest = (token?: string) => {
+    const requestHeaders = new Headers(headers);
 
-  return config;
-});
-
-
-api.interceptors.response.use(
-  (response) => response,
-  async (error: AxiosError) => {
-    const originalRequest = error.config as
-      | (InternalAxiosRequestConfig & { _isRefresh?: boolean })
-      | undefined;
-
-    if (!originalRequest) {
-      return Promise.reject(error);
+    if (token) {
+      requestHeaders.set("Authorization", `Bearer ${token}`);
     }
 
-    const isPublic = PUBLIC_ENDPOINT.some((url) =>
-      originalRequest.url?.includes(url)
-    );
+    return fetch(url, {
+      ...options,
+      headers: requestHeaders,
+    });
+  };
 
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._isRefresh &&
-      !isPublic
-    ) {
-      originalRequest._isRefresh = true;
+  let token = localStorage.getItem("accessToken") || undefined;
 
-      try {
-        const refreshToken = localStorage.getItem("REFRESH_TOKEN");
+  let response = await sendRequest(token);
 
-        if (!refreshToken) {
-          throw new Error("No refresh token available");
-        }
-
-        const refreshResponse = await refreshTokenCall(refreshToken);
-        const newAccessToken = refreshResponse.data.accessToken;
-
-        localStorage.setItem("ACCESS_TOKEN", newAccessToken);
-
-        originalRequest.headers.Authorization =
-          `Bearer ${newAccessToken}`;
-
-        return api(originalRequest);
-      } catch (refreshError) {
-        localStorage.removeItem("ACCESS_TOKEN");
-        localStorage.removeItem("REFRESH_TOKEN");
-
-        window.location.href = "/login";
-
-        return Promise.reject(refreshError);
+  // Handle expired access token
+  if (response.status === 401 && !isPublic) {
+    try {
+      if (!refreshPromise) {
+        refreshPromise = refreshAccessToken().finally(() => {
+          refreshPromise = null;
+        });
       }
+
+      token = await refreshPromise;
+
+      // Retry original request with new access token
+      response = await sendRequest(token);
+    } catch (error) {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+
+      window.location.href = "/login";
+
+      throw error;
     }
-
-    return Promise.reject(error);
   }
-);
 
-export default api;
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(
+      data?.message || `Request failed: ${response.status}`
+    );
+  }
+
+  return data as T;
+}

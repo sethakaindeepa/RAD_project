@@ -1,5 +1,4 @@
-
-import api from "./api";
+import { apiFetch } from "./api";
 
 export type AuthResponse = {
   accessToken: string;
@@ -11,16 +10,34 @@ export type AuthResponse = {
   };
 };
 
+type BackendLoginResponse = {
+  message: string;
+  data: {
+    email: string;
+    roles: string[];
+    access_token: string;
+    refresh_token: string;
+  };
+};
+
 export const login = async (
   email: string,
   password: string
 ): Promise<AuthResponse> => {
-  const res = await api.post("/auth/login", {
-    email,
-    password,
+  const response = await apiFetch<BackendLoginResponse>("/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
   });
 
-  return res.data;
+  return {
+    accessToken: response.data.access_token,
+    refreshToken: response.data.refresh_token,
+    user: {
+      id: "",
+      name: "",
+      email: response.data.email,
+    },
+  };
 };
 
 export const register = async (
@@ -28,26 +45,33 @@ export const register = async (
   email: string,
   password: string
 ) => {
-  const res = await api.post("/auth/register", {
-    name,
-    email,
-    password,
+  return apiFetch("/auth/register", {
+    method: "POST",
+    body: JSON.stringify({
+      name,
+      email,
+      password,
+    }),
   });
-
-  return res.data;
 };
 
 export const getMyDetails = async () => {
-  const res = await api.get("/auth/me");
-  return res.data;
+  return apiFetch("/auth/me");
 };
 
 export const refreshTokenCall = async (
   refreshToken: string
 ) => {
-  const res = await api.post("/auth/refresh", {
-    refreshToken,
-  });
+  const response = await apiFetch<BackendLoginResponse>(
+    "/auth/refresh",
+    {
+      method: "POST",
+      body: JSON.stringify({ refreshToken }),
+    }
+  );
 
-  return res.data;
+  return {
+    accessToken: response.data.access_token,
+    refreshToken: response.data.refresh_token,
+  };
 };

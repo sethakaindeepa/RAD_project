@@ -24,7 +24,7 @@ export default function Register() {
     setError("");
     setSuccess("");
 
-    // Frontend validation
+    
     if (password.length < 8) {
       setError("Password must contain at least 8 characters.");
       return;
@@ -38,7 +38,7 @@ export default function Register() {
     try {
       setLoading(true);
 
-      // Connect to ToyLand backend
+      
       const response = await fetch(
         "http://localhost:3000/api/v1/auth/register",
         {
@@ -62,16 +62,16 @@ export default function Register() {
         );
       }
 
-      // Registration successful
+      
       setSuccess("Account created successfully! Redirecting to login...");
 
-      // Clear form
+     
       setFullName("");
       setEmail("");
       setPassword("");
       setConfirmPassword("");
 
-      // Go to login after 1.5 seconds
+      
       setTimeout(() => {
         navigate("/");
       }, 1500);
@@ -108,7 +108,7 @@ export default function Register() {
 
         <form onSubmit={handleSubmit} className="mt-7 space-y-4">
 
-          {/* Full Name */}
+          
           <div>
             <label
               htmlFor="fullName"
@@ -129,7 +129,7 @@ export default function Register() {
             />
           </div>
 
-          {/* Email */}
+         
           <div>
             <label
               htmlFor="email"
@@ -150,7 +150,6 @@ export default function Register() {
             />
           </div>
 
-          {/* Password */}
           <div>
             <label
               htmlFor="password"
@@ -189,7 +188,7 @@ export default function Register() {
             </div>
           </div>
 
-          {/* Confirm Password */}
+          
           <div>
             <label
               htmlFor="confirmPassword"
@@ -231,7 +230,7 @@ export default function Register() {
             </div>
           </div>
 
-          {/* Error */}
+          
           {error && (
             <p
               role="alert"
@@ -241,7 +240,7 @@ export default function Register() {
             </p>
           )}
 
-          {/* Success */}
+          
           {success && (
             <p
               role="status"
@@ -251,7 +250,7 @@ export default function Register() {
             </p>
           )}
 
-          {/* Submit */}
+          
           <button
             type="submit"
             disabled={loading}
