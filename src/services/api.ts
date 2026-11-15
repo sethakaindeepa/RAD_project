@@ -85,7 +85,7 @@ export async function apiFetch<T>(
 
   let response = await sendRequest(token);
 
-  // Handle expired access token
+  
   if (response.status === 401 && !isPublic) {
     try {
       if (!refreshPromise) {
@@ -96,7 +96,7 @@ export async function apiFetch<T>(
 
       token = await refreshPromise;
 
-      // Retry original request with new access token
+      
       response = await sendRequest(token);
     } catch (error) {
       localStorage.removeItem("accessToken");
