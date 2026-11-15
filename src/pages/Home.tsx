@@ -14,7 +14,7 @@ import dollsImg from "../assets/dolls.jpg";
 import { useCart } from "../hooks/useCart";
 import { getProducts, type Product } from "../services/products";
 
-// ================= CATEGORIES =================
+
 
 export const categories = [
   {
@@ -55,7 +55,7 @@ export const categories = [
   },
 ];
 
-// ================= ICON PATHS =================
+
 
 const ICONS = {
   truck: [
@@ -93,7 +93,7 @@ const ICONS = {
   ],
 };
 
-// ================= FEATURE ITEMS =================
+
 
 type FeatureItem = [
   string[],
@@ -129,7 +129,7 @@ const items: FeatureItem[] = [
   ],
 ];
 
-// ================= BADGES =================
+
 
 const BADGE: Record<string, string> = {
   New: "bg-[#00c566]",
@@ -137,7 +137,7 @@ const BADGE: Record<string, string> = {
   Sale: "bg-[#ef4444]",
 };
 
-// ================= ICON COMPONENT =================
+
 
 function Icon({
   d,
@@ -165,7 +165,7 @@ function Icon({
   );
 }
 
-// ================= STARS =================
+
 
 function Stars({ rating }: { rating: number }) {
   return (
@@ -179,7 +179,7 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
-// ================= PRODUCT CARD =================
+
 
 function ProductCard({
   product,
@@ -203,10 +203,7 @@ function ProductCard({
       ? Math.round((1 - product.price / oldPrice) * 100)
       : 0;
 
-  /*
-   * These colors are presentation-only.
-   * They do not need to be stored in MongoDB.
-   */
+ 
   const tones = [
     "from-orange-100 to-yellow-50",
     "from-sky-100 to-cyan-50",
@@ -237,18 +234,18 @@ function ProductCard({
   return (
     <article className="group overflow-hidden rounded-3xl bg-white shadow-md shadow-slate-900/5 ring-1 ring-black/5 transition duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-orange-300/40">
 
-      {/* IMAGE AREA */}
+      
 
       <div
         className={`relative grid h-64 place-items-center overflow-hidden bg-linear-to-br ${tone}`}
       >
-        {/* Decorative circles */}
+        
 
         <span className="absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-white/40" />
 
         <span className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/30" />
 
-        {/* Badge */}
+        
 
         {badge && (
           <span
@@ -260,7 +257,7 @@ function ProductCard({
           </span>
         )}
 
-        {/* Wishlist */}
+        
 
         <button
           type="button"
@@ -278,7 +275,7 @@ function ProductCard({
           />
         </button>
 
-        {/* Product Image */}
+       
 
         {product.image ? (
           <img
@@ -292,7 +289,7 @@ function ProductCard({
           </span>
         )}
 
-        {/* Quick Add */}
+        
 
         <button
           type="button"
@@ -304,11 +301,11 @@ function ProductCard({
         </button>
       </div>
 
-      {/* PRODUCT DETAILS */}
+      
 
       <div className="p-5">
 
-        {/* Rating */}
+       
 
         <div className="flex items-center gap-2">
           <Stars rating={rating} />
@@ -318,13 +315,13 @@ function ProductCard({
           </span>
         </div>
 
-        {/* Product Name */}
+        
 
         <h3 className="mt-2 truncate text-lg font-extrabold text-slate-900">
           {product.name}
         </h3>
 
-        {/* Price */}
+       
 
         <div className="mt-3 flex items-center justify-between">
           <div className="flex items-baseline gap-2">
@@ -339,7 +336,7 @@ function ProductCard({
             )}
           </div>
 
-          {/* Cart */}
+         
 
           <button
             type="button"
@@ -356,9 +353,7 @@ function ProductCard({
   );
 }
 
-// ================= SAMPLE CUSTOMER REVIEWS =================
 
-// Replace these sample testimonials with real customer feedback when available.
 const REVIEWS = [
   {
     name: "Nimali Perera",
@@ -380,7 +375,7 @@ const REVIEWS = [
   },
 ];
 
-// ================= CUSTOMER REVIEWS =================
+
 
 function Reviews() {
   return (
@@ -424,7 +419,7 @@ function Reviews() {
   );
 }
 
-// ================= NEWSLETTER =================
+
 
 function Newsletter() {
   const [email, setEmail] = useState("");
@@ -497,7 +492,7 @@ function Newsletter() {
   );
 }
 
-// ================= HOME COMPONENT =================
+
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -508,7 +503,7 @@ export default function Home() {
 
   const { addToCart } = useCart();
 
-  // ================= LOAD PRODUCTS =================
+  
 
   const loadProducts = useCallback(async () => {
     try {
@@ -542,7 +537,7 @@ export default function Home() {
     );
   };
 
-  // ================= ADD TO CART =================
+  
 
   const handleAddToCart = (product: Product) => {
     if ((product.stock ?? 0) <= 0) return;
@@ -555,12 +550,12 @@ export default function Home() {
     });
   };
 
-  // ================= RENDER =================
+  
 
   return (
     <div className="min-h-screen bg-linear-to-r from-[#FFF1D9] via-[#FFF8EA] to-[#FFD19B] text-[#14284D]">
 
-      {/* ================= HERO ================= */}
+      
 
       <section className="relative overflow-hidden">
 
@@ -568,7 +563,7 @@ export default function Home() {
 
         <div className="mx-auto grid min-h-90 max-w-330 items-center gap-8 px-6 py-12 md:grid-cols-2 md:py-10">
 
-          {/* LEFT */}
+          
 
           <div className="relative z-10">
 
@@ -598,7 +593,7 @@ export default function Home() {
 
           </div>
 
-          {/* RIGHT */}
+         
 
           <div className="relative flex min-h-70 items-center justify-center md:min-h-85">
 
@@ -628,7 +623,7 @@ export default function Home() {
 
         </div>
 
-        {/* ================= FEATURES ================= */}
+        
 
         <div className="relative z-10 mx-auto -mb-8 max-w-7xl px-6">
 
@@ -670,7 +665,7 @@ export default function Home() {
 
       </section>
 
-      {/* ================= CATEGORIES ================= */}
+      
 
       <section
         id="categories"
@@ -743,14 +738,14 @@ export default function Home() {
 
       </section>
 
-      {/* ================= PRODUCTS ================= */}
+     
 
       <section
         id="products"
         className="mx-auto max-w-7xl scroll-mt-24 px-6 py-12"
       >
 
-        {/* HEADER */}
+       
 
         <div className="mb-8">
      <p className="text-sm font-extrabold tracking-wide text-orange-600">
@@ -766,7 +761,7 @@ export default function Home() {
     </p>
    </div>
 
-        {/* LOADING */}
+        
 
         {loading && (
 
@@ -782,7 +777,7 @@ export default function Home() {
 
         )}
 
-        {/* ERROR */}
+        
 
         {!loading && error && (
 
@@ -804,7 +799,7 @@ export default function Home() {
 
         )}
 
-        {/* PRODUCTS */}
+       
 
         {!loading && !error && (
 
@@ -822,7 +817,7 @@ export default function Home() {
 
             ))}
 
-            {/* NO PRODUCTS */}
+           
 
             {products.length === 0 && (
               <p className="col-span-full rounded-3xl bg-white/70 py-12 text-center font-medium text-slate-600">
@@ -836,41 +831,17 @@ export default function Home() {
 
       </section>
 
-      {/* ================= CUSTOMER REVIEWS ================= */}
+      
 
       <Reviews />
 
-      {/* ================= NEWSLETTER ================= */}
+      
 
       <Newsletter />
 
-      {/* ================= FOOTER ================= */}
+      
 
-      <footer
-        id="about"
-        className="border-t border-orange-200/50 bg-transparent"
-      >
-
-        <div className="mx-auto flex max-w-330 flex-col justify-between gap-4 px-6 py-7 sm:flex-row sm:items-center">
-
-          <Link
-            to="/"
-            className="text-xl font-black"
-          >
-            Toy<span className="text-orange-500">Land</span> 🧸
-          </Link>
-
-          <p className="text-xs text-slate-600">
-            Bringing smiles to little adventurers. © 2026 ToyLand.
-          </p>
-
-          <p className="text-xs font-semibold text-slate-600">
-            Made with care in Sri Lanka 🇱🇰
-          </p>
-
-        </div>
-
-      </footer>
+      
 
     </div>
   );

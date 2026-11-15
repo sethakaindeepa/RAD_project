@@ -9,12 +9,12 @@ export default function OrderSuccess() {
   return (
     <section className="flex min-h-screen flex-col items-center justify-center bg-linear-to-r from-[#FFF1D9] via-[#FFF8EA] to-[#FFD19B] px-6 py-16 text-center text-[#14284D]">
 
-      {/* Success Icon */}
+      
       <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-green-200 bg-green-100 text-5xl font-bold text-green-600 shadow-lg shadow-green-900/10">
         ✓
       </div>
 
-      {/* Success Message */}
+     
       <h1 className="mt-7 text-3xl font-extrabold md:text-4xl">
         Order Placed Successfully!
       </h1>
@@ -24,7 +24,7 @@ export default function OrderSuccess() {
         We appreciate your trust in us!
       </p>
 
-      {/* Order Details */}
+      
       {order && (
         <div className="mt-8 w-full max-w-md rounded-2xl border border-orange-100 bg-white p-6 text-left shadow-lg shadow-orange-900/5">
 
@@ -61,7 +61,7 @@ export default function OrderSuccess() {
         </div>
       )}
 
-      {/* Continue Shopping */}
+      
       <Link
         to="/products"
         className="mt-8 rounded-xl bg-orange-500 px-8 py-3.5 font-bold text-white shadow-md shadow-orange-500/20 transition hover:-translate-y-0.5 hover:bg-orange-600 hover:shadow-lg"

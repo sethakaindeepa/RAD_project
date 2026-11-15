@@ -77,7 +77,7 @@ export default function Products() {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  // LOAD PRODUCTS
+ 
 
   async function loadProducts() {
     try {
@@ -101,7 +101,7 @@ export default function Products() {
     loadProducts();
   }, []);
 
-  // FILTER AND SORT PRODUCTS
+  
 
   const filteredProducts = useMemo(() => {
     let result = products.filter((product) => {
@@ -138,7 +138,7 @@ export default function Products() {
     return result;
   }, [products, searchTerm, selectedCategory, sortOption]);
 
-  // ADD TO CART
+  
 
   function handleAddToCart(product: Product) {
     if ((product.stock ?? 0) <= 0) return;
@@ -151,7 +151,7 @@ export default function Products() {
     });
   }
 
-  // OPEN ADD FORM
+  
 
   function openAddForm() {
     setEditingProduct(null);
@@ -159,7 +159,7 @@ export default function Products() {
     setShowForm(true);
   }
 
-  // OPEN EDIT FORM
+  
 
   function openEditForm(product: Product) {
     setEditingProduct(product);
@@ -176,7 +176,7 @@ export default function Products() {
     setShowForm(true);
   }
 
-  // HANDLE FORM INPUTS
+  
 
   function handleInputChange(
     event: React.ChangeEvent<
@@ -194,7 +194,7 @@ export default function Products() {
     }));
   }
 
-  // CREATE OR UPDATE PRODUCT
+ 
 
   async function handleSubmit(
     event: React.FormEvent<HTMLFormElement>
@@ -243,7 +243,7 @@ export default function Products() {
     }
   }
 
-  // DELETE PRODUCT
+  
 
   async function handleDelete(id: string) {
     const confirmed = window.confirm(
@@ -269,7 +269,7 @@ export default function Products() {
     }
   }
 
-  // LOADING SCREEN
+  
 
   if (loading) {
     return (
@@ -287,7 +287,7 @@ export default function Products() {
   return (
     <div className="min-h-screen bg-linear-to-r from-[#FFF1D9] via-[#FFF8EA] to-[#FFD19B] text-[#14284D]">
 
-      {/* HERO SECTION */}
+      
 
       <section className="relative overflow-hidden border-b border-orange-200/50 bg-transparent px-4 py-12 sm:py-16">
         <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-orange-300/30 blur-3xl" />
@@ -323,7 +323,7 @@ export default function Products() {
         </div>
       </section>
 
-      {/* ERROR MESSAGE */}
+      
 
       {error && (
         <div className="mx-auto mt-6 max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -333,11 +333,11 @@ export default function Products() {
         </div>
       )}
 
-      {/* PRODUCTS SECTION */}
+      
 
       <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
 
-        {/* SEARCH AND SORT */}
+        
 
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 
@@ -386,7 +386,7 @@ export default function Products() {
 
         </div>
 
-        {/* CATEGORY FILTERS */}
+        
 
         <div className="mt-7 flex gap-3 overflow-x-auto pb-3">
           {categories.map((category) => (
@@ -405,7 +405,7 @@ export default function Products() {
           ))}
         </div>
 
-        {/* PRODUCT COUNT */}
+        
 
         <div className="mb-6 mt-5 flex items-center justify-between">
           <h2 className="text-2xl font-black text-[#14284D]">
@@ -418,7 +418,7 @@ export default function Products() {
           </p>
         </div>
 
-        {/* PRODUCT GRID */}
+        
 
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -429,7 +429,7 @@ export default function Products() {
                 className="group overflow-hidden rounded-3xl border border-orange-100 bg-white shadow-md shadow-slate-900/5 transition duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-orange-300/40"
               >
 
-                {/* PRODUCT IMAGE */}
+                
 
                 <div className="relative flex h-60 items-center justify-center overflow-hidden bg-linear-to-br from-orange-50 to-yellow-50">
                   {product.image ? (
@@ -448,7 +448,7 @@ export default function Products() {
                   </span>
                 </div>
 
-                {/* PRODUCT DETAILS */}
+                
 
                 <div className="p-5">
 
@@ -456,7 +456,7 @@ export default function Products() {
                     {product.name}
                   </h3>
 
-                  {/* RATING */}
+                  
 
                   {product.rating !== undefined && (
                     <div className="mt-2 flex items-center gap-2">
@@ -478,7 +478,7 @@ export default function Products() {
                     </div>
                   )}
 
-                  {/* PRICE */}
+                  
 
                   <div className="mt-4">
                     <span className="text-xl font-black text-orange-500">
@@ -486,7 +486,7 @@ export default function Products() {
                     </span>
                   </div>
 
-                  {/* STOCK */}
+                  
 
                   <p
                     className={`mt-2 text-sm font-semibold ${
@@ -500,7 +500,7 @@ export default function Products() {
                       : "Out of stock"}
                   </p>
 
-                  {/* ADD TO CART */}
+                  
 
                   <Button
                     type="button"
@@ -512,7 +512,7 @@ export default function Products() {
                     Add to Cart
                   </Button>
 
-                  {/* EDIT AND DELETE */}
+                  
 
                   <div className="mt-3 grid grid-cols-2 gap-2">
 
@@ -547,7 +547,7 @@ export default function Products() {
           </div>
         ) : (
 
-          /* EMPTY STATE */
+          
 
           <div className="rounded-3xl border border-dashed border-orange-300 bg-white/70 px-4 py-16 text-center shadow-sm">
             <PackageOpen
@@ -568,14 +568,14 @@ export default function Products() {
 
       </section>
 
-      {/* ADD / EDIT PRODUCT MODAL */}
+    
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#14284D]/60 p-4 backdrop-blur-sm">
 
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-orange-100 bg-[#FFFDF8] p-6 shadow-2xl sm:p-8">
 
-            {/* MODAL HEADER */}
+            
 
             <div className="flex items-center justify-between">
 
@@ -603,14 +603,14 @@ export default function Products() {
 
             </div>
 
-            {/* PRODUCT FORM */}
+            
 
             <form
               onSubmit={handleSubmit}
               className="mt-6 space-y-5"
             >
 
-              {/* NAME */}
+              
 
               <div>
                 <label className="mb-2 block text-sm font-bold text-[#14284D]">
@@ -627,7 +627,7 @@ export default function Products() {
                 />
               </div>
 
-              {/* DESCRIPTION */}
+              
 
               <div>
                 <label className="mb-2 block text-sm font-bold text-[#14284D]">
@@ -645,7 +645,7 @@ export default function Products() {
                 />
               </div>
 
-              {/* PRICE AND STOCK */}
+              
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
@@ -683,7 +683,7 @@ export default function Products() {
 
               </div>
 
-              {/* CATEGORY */}
+              
 
               <div>
                 <label className="mb-2 block text-sm font-bold text-[#14284D]">
@@ -707,7 +707,7 @@ export default function Products() {
                 </select>
               </div>
 
-              {/* IMAGE URL */}
+              
 
               <div>
                 <label className="mb-2 block text-sm font-bold text-[#14284D]">
@@ -729,7 +729,7 @@ export default function Products() {
                 </p>
               </div>
 
-              {/* FORM BUTTONS */}
+              
 
               <div className="flex justify-end gap-3 border-t border-orange-100 pt-5">
 
