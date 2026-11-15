@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, useState } from "react";
 import {
   Search,
@@ -48,17 +49,16 @@ const emptyForm: CreateProductData = {
   stock: 0,
 };
 
+const inputClass =
+  "w-full rounded-xl border border-orange-100 bg-white/90 px-4 py-3 text-[#14284D] outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100";
+
 export default function Products() {
   const { addToCart } = useCart();
 
-  
   const [products, setProducts] = useState<Product[]>([]);
-
-  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] =
     useState("All Categories");
@@ -66,27 +66,20 @@ export default function Products() {
   const [sortOption, setSortOption] =
     useState<SortOption>("featured");
 
-  
   const [showForm, setShowForm] = useState(false);
 
-  
   const [editingProduct, setEditingProduct] =
     useState<Product | null>(null);
 
-  
   const [formData, setFormData] =
     useState<CreateProductData>(emptyForm);
 
-  
   const [saving, setSaving] = useState(false);
-
-  
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  
+  // LOAD PRODUCTS
 
   async function loadProducts() {
-    
     try {
       setLoading(true);
       setError("");
@@ -95,7 +88,7 @@ export default function Products() {
 
       console.log("Products from API:", data);
 
-      setProducts(data);
+      setProducts(data.filter((product) => product.isActive !== false));
     } catch (err) {
       console.error(err);
       setError("Failed to load products.");
@@ -108,7 +101,7 @@ export default function Products() {
     loadProducts();
   }, []);
 
-  
+  // FILTER AND SORT PRODUCTS
 
   const filteredProducts = useMemo(() => {
     let result = products.filter((product) => {
@@ -135,9 +128,7 @@ export default function Products() {
         break;
 
       case "name":
-        result.sort((a, b) =>
-          a.name.localeCompare(b.name)
-        );
+        result.sort((a, b) => a.name.localeCompare(b.name));
         break;
 
       default:
@@ -145,16 +136,13 @@ export default function Products() {
     }
 
     return result;
-  }, [
-    products,
-    searchTerm,
-    selectedCategory,
-    sortOption,
-  ]);
+  }, [products, searchTerm, selectedCategory, sortOption]);
 
-  
+  // ADD TO CART
 
   function handleAddToCart(product: Product) {
+    if ((product.stock ?? 0) <= 0) return;
+
     addToCart({
       id: product._id,
       name: product.name,
@@ -163,15 +151,15 @@ export default function Products() {
     });
   }
 
-
+  // OPEN ADD FORM
 
   function openAddForm() {
     setEditingProduct(null);
-    setFormData(emptyForm);
+    setFormData({ ...emptyForm });
     setShowForm(true);
   }
 
-  
+  // OPEN EDIT FORM
 
   function openEditForm(product: Product) {
     setEditingProduct(product);
@@ -188,7 +176,7 @@ export default function Products() {
     setShowForm(true);
   }
 
-  
+  // HANDLE FORM INPUTS
 
   function handleInputChange(
     event: React.ChangeEvent<
@@ -206,7 +194,7 @@ export default function Products() {
     }));
   }
 
-  
+  // CREATE OR UPDATE PRODUCT
 
   async function handleSubmit(
     event: React.FormEvent<HTMLFormElement>
@@ -218,7 +206,6 @@ export default function Products() {
       setError("");
 
       if (editingProduct) {
-        // UPDATE
         const updatedProduct = await updateProduct(
           editingProduct._id,
           formData
@@ -232,7 +219,6 @@ export default function Products() {
           )
         );
       } else {
-        // CREATE
         const newProduct = await createProduct(formData);
 
         setProducts((previous) => [
@@ -243,9 +229,10 @@ export default function Products() {
 
       setShowForm(false);
       setEditingProduct(null);
-      setFormData(emptyForm);
+      setFormData({ ...emptyForm });
     } catch (err) {
       console.error(err);
+
       setError(
         editingProduct
           ? "Failed to update product."
@@ -256,16 +243,14 @@ export default function Products() {
     }
   }
 
-  
+  // DELETE PRODUCT
 
   async function handleDelete(id: string) {
     const confirmed = window.confirm(
       "Are you sure you want to delete this product?"
     );
 
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     try {
       setDeletingId(id);
@@ -284,49 +269,51 @@ export default function Products() {
     }
   }
 
-  
+  // LOADING SCREEN
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-lg font-semibold text-gray-600">
-          Loading toys...
-        </p>
+      <div className="flex min-h-screen items-center justify-center bg-linear-to-r from-[#FFF1D9] via-[#FFF8EA] to-[#FFD19B]">
+        <div className="text-center">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-orange-200 border-t-orange-500" />
+          <p className="mt-4 font-semibold text-[#14284D]">
+            Loading toys...
+          </p>
+        </div>
       </div>
     );
   }
 
-  
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-linear-to-r from-[#FFF1D9] via-[#FFF8EA] to-[#FFD19B] text-[#14284D]">
 
-      
-      <section className="bg-orange-50 px-4 py-12 sm:py-16">
-        <div className="mx-auto max-w-7xl">
+      {/* HERO SECTION */}
 
+      <section className="relative overflow-hidden border-b border-orange-200/50 bg-transparent px-4 py-12 sm:py-16">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-orange-300/30 blur-3xl" />
+
+        <div className="relative mx-auto max-w-7xl">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
 
             <div>
-              <p className="font-semibold uppercase tracking-widest text-orange-600">
+              <p className="font-extrabold uppercase tracking-[0.2em] text-orange-600">
                 Explore ToyLand
               </p>
 
-              <h1 className="mt-3 text-3xl font-extrabold text-gray-900 sm:text-5xl">
+              <h1 className="mt-3 text-3xl font-black tracking-tight text-[#14284D] sm:text-5xl">
                 Find Your Next Favourite Toy
               </h1>
 
-              <p className="mt-4 max-w-2xl text-gray-600">
+              <p className="mt-4 max-w-2xl leading-relaxed text-slate-600">
                 Discover toys that inspire imagination,
                 creativity, and hours of fun.
               </p>
             </div>
 
-            
             <Button
               type="button"
               onClick={openAddForm}
-              className="flex items-center justify-center gap-2 md:w-auto"
+              className="flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 md:w-auto"
             >
               <Plus size={18} />
               Add Product
@@ -336,47 +323,48 @@ export default function Products() {
         </div>
       </section>
 
-      
+      {/* ERROR MESSAGE */}
+
       {error && (
-        <div className="mx-auto mt-6 max-w-7xl px-4">
-          <div className="rounded-xl bg-red-100 px-4 py-3 text-red-700">
+        <div className="mx-auto mt-6 max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-700 shadow-sm">
             {error}
           </div>
         </div>
       )}
 
-      
+      {/* PRODUCTS SECTION */}
+
       <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
 
-        
+        {/* SEARCH AND SORT */}
+
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 
           <div className="relative w-full md:max-w-md">
             <Search
               size={20}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
             />
 
             <input
               type="search"
               value={searchTerm}
-              onChange={(event) =>
-                setSearchTerm(event.target.value)
-              }
+              onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Search toys by name..."
-              className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-12 pr-4 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+              className={`${inputClass} pl-12 shadow-sm`}
             />
           </div>
 
           <div className="flex items-center gap-3">
             <SlidersHorizontal
               size={20}
-              className="text-gray-500"
+              className="text-orange-600"
             />
 
             <label
               htmlFor="sortProducts"
-              className="text-sm font-medium text-gray-600"
+              className="text-sm font-bold text-[#14284D]"
             >
               Sort by:
             </label>
@@ -385,44 +373,31 @@ export default function Products() {
               id="sortProducts"
               value={sortOption}
               onChange={(event) =>
-                setSortOption(
-                  event.target.value as SortOption
-                )
+                setSortOption(event.target.value as SortOption)
               }
-              className="rounded-xl border border-gray-200 bg-white px-3 py-3 outline-none focus:border-orange-500"
+              className="rounded-xl border border-orange-100 bg-white px-3 py-3 text-[#14284D] outline-none shadow-sm focus:border-orange-400"
             >
-              <option value="featured">
-                Featured
-              </option>
-
-              <option value="price-low">
-                Price: Low to High
-              </option>
-
-              <option value="price-high">
-                Price: High to Low
-              </option>
-
-              <option value="name">
-                Name: A to Z
-              </option>
+              <option value="featured">Featured</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="name">Name: A to Z</option>
             </select>
           </div>
+
         </div>
 
-        
+        {/* CATEGORY FILTERS */}
+
         <div className="mt-7 flex gap-3 overflow-x-auto pb-3">
           {categories.map((category) => (
             <button
               key={category}
               type="button"
-              onClick={() =>
-                setSelectedCategory(category)
-              }
-              className={`shrink-0 rounded-full px-5 py-2.5 text-sm font-semibold transition ${
+              onClick={() => setSelectedCategory(category)}
+              className={`shrink-0 rounded-full px-5 py-2.5 text-sm font-bold transition ${
                 selectedCategory === category
-                  ? "bg-orange-500 text-white shadow-sm"
-                  : "border border-gray-200 bg-white text-gray-600 hover:border-orange-300 hover:text-orange-600"
+                  ? "bg-orange-500 text-white shadow-lg shadow-orange-500/25"
+                  : "border border-orange-200 bg-white/80 text-[#14284D] hover:border-orange-400 hover:bg-white hover:text-orange-600"
               }`}
             >
               {category}
@@ -430,54 +405,59 @@ export default function Products() {
           ))}
         </div>
 
-        
+        {/* PRODUCT COUNT */}
+
         <div className="mb-6 mt-5 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">
+          <h2 className="text-2xl font-black text-[#14284D]">
             Our Toys
           </h2>
 
-          <p className="text-sm text-gray-500">
+          <p className="text-sm font-semibold text-slate-600">
             {filteredProducts.length}{" "}
-            {filteredProducts.length === 1
-              ? "product"
-              : "products"}
+            {filteredProducts.length === 1 ? "product" : "products"}
           </p>
         </div>
 
-       
+        {/* PRODUCT GRID */}
+
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 
             {filteredProducts.map((product) => (
               <article
                 key={product._id}
-                className="group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                className="group overflow-hidden rounded-3xl border border-orange-100 bg-white shadow-md shadow-slate-900/5 transition duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-orange-300/40"
               >
 
-               
-                <div className="relative flex h-60 items-center justify-center overflow-hidden bg-gray-100">
+                {/* PRODUCT IMAGE */}
 
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    loading="lazy"
-                    className="h-full w-full object-contain p-4 transition duration-300 group-hover:scale-105"
-                  />
+                <div className="relative flex h-60 items-center justify-center overflow-hidden bg-linear-to-br from-orange-50 to-yellow-50">
+                  {product.image ? (
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      loading="lazy"
+                      className="h-full w-full object-contain p-4 transition duration-500 group-hover:scale-110"
+                    />
+                  ) : (
+                    <span className="text-8xl">🧸</span>
+                  )}
 
+                  <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-orange-600 shadow-sm">
+                    {product.category}
+                  </span>
                 </div>
 
-                
+                {/* PRODUCT DETAILS */}
+
                 <div className="p-5">
 
-                  <p className="text-xs font-semibold uppercase tracking-wide text-orange-600">
-                    {product.category}
-                  </p>
-
-                  <h3 className="mt-2 min-h-12 text-lg font-bold text-gray-900">
+                  <h3 className="min-h-12 text-lg font-extrabold text-[#14284D]">
                     {product.name}
                   </h3>
 
-                  
+                  {/* RATING */}
+
                   {product.rating !== undefined && (
                     <div className="mt-2 flex items-center gap-2">
                       <Star
@@ -486,28 +466,30 @@ export default function Products() {
                         className="text-amber-400"
                       />
 
-                      <span className="text-sm font-semibold text-gray-700">
+                      <span className="text-sm font-bold text-slate-700">
                         {product.rating}
                       </span>
 
                       {product.reviews !== undefined && (
-                        <span className="text-sm text-gray-400">
+                        <span className="text-sm text-slate-400">
                           ({product.reviews} reviews)
                         </span>
                       )}
                     </div>
                   )}
 
-                 
+                  {/* PRICE */}
+
                   <div className="mt-4">
-                    <span className="text-xl font-extrabold text-gray-900">
+                    <span className="text-xl font-black text-orange-500">
                       {formatPrice(product.price)}
                     </span>
                   </div>
 
-                  
+                  {/* STOCK */}
+
                   <p
-                    className={`mt-2 text-sm font-medium ${
+                    className={`mt-2 text-sm font-semibold ${
                       product.stock > 0
                         ? "text-green-600"
                         : "text-red-600"
@@ -518,28 +500,26 @@ export default function Products() {
                       : "Out of stock"}
                   </p>
 
-                  
+                  {/* ADD TO CART */}
+
                   <Button
                     type="button"
-                    disabled={product.stock === 0}
-                    className="mt-4 flex w-full items-center justify-center gap-2"
-                    onClick={() =>
-                      handleAddToCart(product)
-                    }
+                    disabled={product.stock <= 0}
+                    className="mt-4 flex w-full items-center justify-center gap-2 shadow-md shadow-orange-500/20"
+                    onClick={() => handleAddToCart(product)}
                   >
                     <ShoppingCart size={18} />
                     Add to Cart
                   </Button>
 
-                  
+                  {/* EDIT AND DELETE */}
+
                   <div className="mt-3 grid grid-cols-2 gap-2">
 
                     <button
                       type="button"
-                      onClick={() =>
-                        openEditForm(product)
-                      }
-                      className="flex items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-100"
+                      onClick={() => openEditForm(product)}
+                      className="flex items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2.5 text-sm font-bold text-blue-600 transition hover:bg-blue-100"
                     >
                       <Pencil size={16} />
                       Edit
@@ -547,13 +527,9 @@ export default function Products() {
 
                     <button
                       type="button"
-                      disabled={
-                        deletingId === product._id
-                      }
-                      onClick={() =>
-                        handleDelete(product._id)
-                      }
-                      className="flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-100 disabled:opacity-50"
+                      disabled={deletingId === product._id}
+                      onClick={() => handleDelete(product._id)}
+                      className="flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm font-bold text-red-600 transition hover:bg-red-100 disabled:opacity-50"
                     >
                       <Trash2 size={16} />
 
@@ -570,18 +546,20 @@ export default function Products() {
 
           </div>
         ) : (
-          <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-4 py-16 text-center">
 
+          /* EMPTY STATE */
+
+          <div className="rounded-3xl border border-dashed border-orange-300 bg-white/70 px-4 py-16 text-center shadow-sm">
             <PackageOpen
               size={48}
-              className="mx-auto text-gray-400"
+              className="mx-auto text-orange-400"
             />
 
-            <h3 className="mt-4 text-xl font-bold text-gray-900">
+            <h3 className="mt-4 text-xl font-black text-[#14284D]">
               No toys found
             </h3>
 
-            <p className="mt-2 text-gray-500">
+            <p className="mt-2 text-slate-500">
               Try another search term or category.
             </p>
 
@@ -590,23 +568,25 @@ export default function Products() {
 
       </section>
 
-      
+      {/* ADD / EDIT PRODUCT MODAL */}
+
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#14284D]/60 p-4 backdrop-blur-sm">
 
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-orange-100 bg-[#FFFDF8] p-6 shadow-2xl sm:p-8">
 
-            
+            {/* MODAL HEADER */}
+
             <div className="flex items-center justify-between">
 
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">
+                <h2 className="text-2xl font-black text-[#14284D]">
                   {editingProduct
                     ? "Edit Product"
                     : "Add New Product"}
                 </h2>
 
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-slate-500">
                   {editingProduct
                     ? "Update the toy details."
                     : "Add a new toy to ToyLand."}
@@ -616,22 +596,24 @@ export default function Products() {
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="rounded-full p-2 text-gray-500 hover:bg-gray-100"
+                className="rounded-full p-2 text-slate-500 transition hover:bg-orange-100 hover:text-orange-600"
               >
                 <X size={22} />
               </button>
 
             </div>
 
-            
+            {/* PRODUCT FORM */}
+
             <form
               onSubmit={handleSubmit}
               className="mt-6 space-y-5"
             >
 
-              
+              {/* NAME */}
+
               <div>
-                <label className="mb-1 block text-sm font-semibold text-gray-700">
+                <label className="mb-2 block text-sm font-bold text-[#14284D]">
                   Toy Name
                 </label>
 
@@ -640,14 +622,15 @@ export default function Products() {
                   value={formData.name}
                   onChange={handleInputChange}
                   required
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                  className={inputClass}
                   placeholder="Enter toy name"
                 />
               </div>
 
-              
+              {/* DESCRIPTION */}
+
               <div>
-                <label className="mb-1 block text-sm font-semibold text-gray-700">
+                <label className="mb-2 block text-sm font-bold text-[#14284D]">
                   Description
                 </label>
 
@@ -657,16 +640,17 @@ export default function Products() {
                   onChange={handleInputChange}
                   required
                   rows={3}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                  className={inputClass}
                   placeholder="Enter toy description"
                 />
               </div>
 
-              
+              {/* PRICE AND STOCK */}
+
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
                 <div>
-                  <label className="mb-1 block text-sm font-semibold text-gray-700">
+                  <label className="mb-2 block text-sm font-bold text-[#14284D]">
                     Price (Rs.)
                   </label>
 
@@ -677,12 +661,12 @@ export default function Products() {
                     onChange={handleInputChange}
                     min="0"
                     required
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-orange-500"
+                    className={inputClass}
                   />
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-sm font-semibold text-gray-700">
+                  <label className="mb-2 block text-sm font-bold text-[#14284D]">
                     Stock
                   </label>
 
@@ -693,15 +677,16 @@ export default function Products() {
                     onChange={handleInputChange}
                     min="0"
                     required
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-orange-500"
+                    className={inputClass}
                   />
                 </div>
 
               </div>
 
-              
+              {/* CATEGORY */}
+
               <div>
-                <label className="mb-1 block text-sm font-semibold text-gray-700">
+                <label className="mb-2 block text-sm font-bold text-[#14284D]">
                   Category
                 </label>
 
@@ -710,27 +695,22 @@ export default function Products() {
                   value={formData.category}
                   onChange={handleInputChange}
                   required
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-orange-500"
+                  className={inputClass}
                 >
                   {categories
-                    .filter(
-                      (category) =>
-                        category !== "All Categories"
-                    )
+                    .filter((category) => category !== "All Categories")
                     .map((category) => (
-                      <option
-                        key={category}
-                        value={category}
-                      >
+                      <option key={category} value={category}>
                         {category}
                       </option>
                     ))}
                 </select>
               </div>
 
-              
+              {/* IMAGE URL */}
+
               <div>
-                <label className="mb-1 block text-sm font-semibold text-gray-700">
+                <label className="mb-2 block text-sm font-bold text-[#14284D]">
                   Image URL
                 </label>
 
@@ -740,24 +720,23 @@ export default function Products() {
                   value={formData.image}
                   onChange={handleInputChange}
                   required
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-orange-500"
+                  className={inputClass}
                   placeholder="/assets/teddy-bear.jpg"
                 />
 
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-slate-500">
                   Example: /assets/teddy-bear.jpg
                 </p>
               </div>
 
-              
-              <div className="flex justify-end gap-3 pt-3">
+              {/* FORM BUTTONS */}
+
+              <div className="flex justify-end gap-3 border-t border-orange-100 pt-5">
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowForm(false)
-                  }
-                  className="rounded-lg border border-gray-300 px-5 py-3 font-semibold text-gray-600 hover:bg-gray-50"
+                  onClick={() => setShowForm(false)}
+                  className="rounded-full border border-orange-200 bg-white px-5 py-3 font-bold text-[#14284D] transition hover:bg-orange-50"
                 >
                   Cancel
                 </button>
