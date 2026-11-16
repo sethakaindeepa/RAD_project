@@ -55,7 +55,7 @@ export default function Cart() {
 
       <section className="mx-auto max-w-6xl px-6 py-12">
 
-        {/* PAGE HEADER */}
+       
 
         <div className="mb-8">
           <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-orange-600">
@@ -73,7 +73,7 @@ export default function Cart() {
 
         <div className="mt-8 grid gap-8 lg:grid-cols-3">
 
-          {/* CART ITEMS */}
+         
 
           <div className="space-y-4 lg:col-span-2">
 
@@ -83,7 +83,7 @@ export default function Cart() {
                 className="flex flex-col gap-4 rounded-3xl border border-orange-100 bg-white p-5 shadow-md shadow-slate-900/5 transition hover:shadow-lg hover:shadow-orange-200/40 sm:flex-row sm:items-center"
               >
 
-                {/* PRODUCT IMAGE */}
+               
 
                 {item.product.image ? (
                   <img
@@ -100,7 +100,7 @@ export default function Cart() {
                   </div>
                 )}
 
-                {/* PRODUCT DETAILS */}
+                
 
                 <div className="flex-1">
 
@@ -112,7 +112,7 @@ export default function Cart() {
                     Rs. {item.product.price.toLocaleString("en-LK")}
                   </p>
 
-                  {/* QUANTITY CONTROLS */}
+                  
 
                   <div className="mt-4 flex items-center gap-3">
 
@@ -143,7 +143,7 @@ export default function Cart() {
                       <Plus size={16} />
                     </button>
 
-                    {/* REMOVE */}
+                    
 
                     <button
                       type="button"
@@ -157,7 +157,7 @@ export default function Cart() {
                   </div>
                 </div>
 
-                {/* ITEM TOTAL */}
+                
 
                 <p className="font-black text-[#14284D] sm:text-right">
                   Rs.{" "}
@@ -171,7 +171,7 @@ export default function Cart() {
 
           </div>
 
-          {/* ORDER SUMMARY */}
+          
 
           <aside className="h-fit rounded-3xl border border-orange-100 bg-white p-6 shadow-lg shadow-slate-900/5">
 
@@ -209,7 +209,7 @@ export default function Cart() {
               </div>
             </div>
 
-            {/* CHECKOUT BUTTON */}
+            
 
             <button
               type="button"
@@ -219,7 +219,7 @@ export default function Cart() {
               Proceed to Checkout
             </button>
 
-            {/* CONTINUE SHOPPING */}
+            
 
             <Link
               to="/products"

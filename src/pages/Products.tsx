@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useState } from "react";
 import {
   Search,
@@ -24,7 +23,13 @@ import {
   type CreateProductData,
 } from "../services/products";
 
-type SortOption = "featured" | "price-low" | "price-high" | "name";
+import { uploadProductImage } from "../services/storage";
+
+type SortOption =
+  | "featured"
+  | "price-low"
+  | "price-high"
+  | "name";
 
 const categories = [
   "All Categories",
@@ -78,7 +83,12 @@ export default function Products() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
  
+  const [selectedImage, setSelectedImage] =
+    useState<File | null>(null);
 
+  const [imagePreview, setImagePreview] = useState("");
+
+  
   async function loadProducts() {
     try {
       setLoading(true);
@@ -88,7 +98,11 @@ export default function Products() {
 
       console.log("Products from API:", data);
 
-      setProducts(data.filter((product) => product.isActive !== false));
+      setProducts(
+        data.filter(
+          (product) => product.isActive !== false
+        )
+      );
     } catch (err) {
       console.error(err);
       setError("Failed to load products.");
@@ -101,8 +115,15 @@ export default function Products() {
     loadProducts();
   }, []);
 
-  
+  useEffect(() => {
+    return () => {
+      if (imagePreview.startsWith("blob:")) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
+  
   const filteredProducts = useMemo(() => {
     let result = products.filter((product) => {
       const matchesSearch = product.name
@@ -128,7 +149,9 @@ export default function Products() {
         break;
 
       case "name":
-        result.sort((a, b) => a.name.localeCompare(b.name));
+        result.sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
         break;
 
       default:
@@ -136,10 +159,14 @@ export default function Products() {
     }
 
     return result;
-  }, [products, searchTerm, selectedCategory, sortOption]);
+  }, [
+    products,
+    searchTerm,
+    selectedCategory,
+    sortOption,
+  ]);
 
   
-
   function handleAddToCart(product: Product) {
     if ((product.stock ?? 0) <= 0) return;
 
@@ -151,16 +178,19 @@ export default function Products() {
     });
   }
 
-  
-
+ 
   function openAddForm() {
     setEditingProduct(null);
     setFormData({ ...emptyForm });
+
+    setSelectedImage(null);
+    setImagePreview("");
+    setError("");
+
     setShowForm(true);
   }
 
   
-
   function openEditForm(product: Product) {
     setEditingProduct(product);
 
@@ -173,14 +203,19 @@ export default function Products() {
       stock: product.stock,
     });
 
+    setSelectedImage(null);
+    setImagePreview(product.image || "");
+    setError("");
+
     setShowForm(true);
   }
 
   
-
   function handleInputChange(
     event: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      HTMLInputElement |
+        HTMLTextAreaElement |
+        HTMLSelectElement
     >
   ) {
     const { name, value } = event.target;
@@ -194,8 +229,54 @@ export default function Products() {
     }));
   }
 
- 
+  
+  function handleImageChange(
+    event: React.ChangeEvent<HTMLInputElement>
+  ) {
+    const file = event.target.files?.[0];
 
+    if (!file) {
+      return;
+    }
+
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      setError(
+        "Only JPG, PNG and WebP images are allowed."
+      );
+
+      event.target.value = "";
+      setSelectedImage(null);
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+      setError("Image size must be less than 5 MB.");
+
+      event.target.value = "";
+      setSelectedImage(null);
+      return;
+    }
+
+    setError("");
+
+    
+    if (imagePreview.startsWith("blob:")) {
+      URL.revokeObjectURL(imagePreview);
+    }
+
+    setSelectedImage(file);
+    setImagePreview(URL.createObjectURL(file));
+  }
+
+  
   async function handleSubmit(
     event: React.FormEvent<HTMLFormElement>
   ) {
@@ -205,11 +286,33 @@ export default function Products() {
       setSaving(true);
       setError("");
 
+      
+      let imageUrl = formData.image;
+
+      
+      if (selectedImage) {
+        imageUrl =
+          await uploadProductImage(selectedImage);
+      }
+
+     
+      if (!imageUrl) {
+        setError("Please select a product image.");
+        return;
+      }
+
+      const productData: CreateProductData = {
+        ...formData,
+        image: imageUrl,
+      };
+
       if (editingProduct) {
-        const updatedProduct = await updateProduct(
-          editingProduct._id,
-          formData
-        );
+        
+        const updatedProduct =
+          await updateProduct(
+            editingProduct._id,
+            productData
+          );
 
         setProducts((previous) =>
           previous.map((product) =>
@@ -219,7 +322,9 @@ export default function Products() {
           )
         );
       } else {
-        const newProduct = await createProduct(formData);
+        
+        const newProduct =
+          await createProduct(productData);
 
         setProducts((previous) => [
           newProduct,
@@ -227,14 +332,20 @@ export default function Products() {
         ]);
       }
 
+      
       setShowForm(false);
       setEditingProduct(null);
       setFormData({ ...emptyForm });
+      setSelectedImage(null);
+      setImagePreview("");
+
     } catch (err) {
-      console.error(err);
+      console.error("Product save error:", err);
 
       setError(
-        editingProduct
+        err instanceof Error
+          ? err.message
+          : editingProduct
           ? "Failed to update product."
           : "Failed to create product."
       );
@@ -243,8 +354,7 @@ export default function Products() {
     }
   }
 
-  
-
+ 
   async function handleDelete(id: string) {
     const confirmed = window.confirm(
       "Are you sure you want to delete this product?"
@@ -259,7 +369,9 @@ export default function Products() {
       await deleteProduct(id);
 
       setProducts((previous) =>
-        previous.filter((product) => product._id !== id)
+        previous.filter(
+          (product) => product._id !== id
+        )
       );
     } catch (err) {
       console.error(err);
@@ -270,12 +382,12 @@ export default function Products() {
   }
 
   
-
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-linear-to-r from-[#FFF1D9] via-[#FFF8EA] to-[#FFD19B]">
         <div className="text-center">
           <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-orange-200 border-t-orange-500" />
+
           <p className="mt-4 font-semibold text-[#14284D]">
             Loading toys...
           </p>
@@ -287,12 +399,13 @@ export default function Products() {
   return (
     <div className="min-h-screen bg-linear-to-r from-[#FFF1D9] via-[#FFF8EA] to-[#FFD19B] text-[#14284D]">
 
-      
-
+     
       <section className="relative overflow-hidden border-b border-orange-200/50 bg-transparent px-4 py-12 sm:py-16">
+
         <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-orange-300/30 blur-3xl" />
 
         <div className="relative mx-auto max-w-7xl">
+
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
 
             <div>
@@ -324,7 +437,6 @@ export default function Products() {
       </section>
 
       
-
       {error && (
         <div className="mx-auto mt-6 max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-700 shadow-sm">
@@ -333,12 +445,10 @@ export default function Products() {
         </div>
       )}
 
-      
-
+     
       <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
 
         
-
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 
           <div className="relative w-full md:max-w-md">
@@ -350,13 +460,16 @@ export default function Products() {
             <input
               type="search"
               value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
+              onChange={(event) =>
+                setSearchTerm(event.target.value)
+              }
               placeholder="Search toys by name..."
               className={`${inputClass} pl-12 shadow-sm`}
             />
           </div>
 
           <div className="flex items-center gap-3">
+
             <SlidersHorizontal
               size={20}
               className="text-orange-600"
@@ -373,27 +486,43 @@ export default function Products() {
               id="sortProducts"
               value={sortOption}
               onChange={(event) =>
-                setSortOption(event.target.value as SortOption)
+                setSortOption(
+                  event.target.value as SortOption
+                )
               }
               className="rounded-xl border border-orange-100 bg-white px-3 py-3 text-[#14284D] outline-none shadow-sm focus:border-orange-400"
             >
-              <option value="featured">Featured</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="name">Name: A to Z</option>
+              <option value="featured">
+                Featured
+              </option>
+
+              <option value="price-low">
+                Price: Low to High
+              </option>
+
+              <option value="price-high">
+                Price: High to Low
+              </option>
+
+              <option value="name">
+                Name: A to Z
+              </option>
             </select>
+
           </div>
 
         </div>
 
         
-
         <div className="mt-7 flex gap-3 overflow-x-auto pb-3">
+
           {categories.map((category) => (
             <button
               key={category}
               type="button"
-              onClick={() => setSelectedCategory(category)}
+              onClick={() =>
+                setSelectedCategory(category)
+              }
               className={`shrink-0 rounded-full px-5 py-2.5 text-sm font-bold transition ${
                 selectedCategory === category
                   ? "bg-orange-500 text-white shadow-lg shadow-orange-500/25"
@@ -403,35 +532,40 @@ export default function Products() {
               {category}
             </button>
           ))}
+
         </div>
 
         
-
         <div className="mb-6 mt-5 flex items-center justify-between">
+
           <h2 className="text-2xl font-black text-[#14284D]">
             Our Toys
           </h2>
 
           <p className="text-sm font-semibold text-slate-600">
             {filteredProducts.length}{" "}
-            {filteredProducts.length === 1 ? "product" : "products"}
+            {filteredProducts.length === 1
+              ? "product"
+              : "products"}
           </p>
+
         </div>
 
-        
-
+       
         {filteredProducts.length > 0 ? (
+
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 
             {filteredProducts.map((product) => (
+
               <article
                 key={product._id}
                 className="group overflow-hidden rounded-3xl border border-orange-100 bg-white shadow-md shadow-slate-900/5 transition duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-orange-300/40"
               >
 
                 
-
                 <div className="relative flex h-60 items-center justify-center overflow-hidden bg-linear-to-br from-orange-50 to-yellow-50">
+
                   {product.image ? (
                     <img
                       src={product.image}
@@ -440,26 +574,27 @@ export default function Products() {
                       className="h-full w-full object-contain p-4 transition duration-500 group-hover:scale-110"
                     />
                   ) : (
-                    <span className="text-8xl">🧸</span>
+                    <span className="text-8xl">
+                      🧸
+                    </span>
                   )}
 
                   <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-orange-600 shadow-sm">
                     {product.category}
                   </span>
+
                 </div>
 
                 
-
                 <div className="p-5">
 
                   <h3 className="min-h-12 text-lg font-extrabold text-[#14284D]">
                     {product.name}
                   </h3>
 
-                  
-
                   {product.rating !== undefined && (
                     <div className="mt-2 flex items-center gap-2">
+
                       <Star
                         size={16}
                         fill="currentColor"
@@ -475,18 +610,15 @@ export default function Products() {
                           ({product.reviews} reviews)
                         </span>
                       )}
+
                     </div>
                   )}
-
-                  
 
                   <div className="mt-4">
                     <span className="text-xl font-black text-orange-500">
                       {formatPrice(product.price)}
                     </span>
                   </div>
-
-                  
 
                   <p
                     className={`mt-2 text-sm font-semibold ${
@@ -500,25 +632,26 @@ export default function Products() {
                       : "Out of stock"}
                   </p>
 
-                  
-
                   <Button
                     type="button"
                     disabled={product.stock <= 0}
                     className="mt-4 flex w-full items-center justify-center gap-2 shadow-md shadow-orange-500/20"
-                    onClick={() => handleAddToCart(product)}
+                    onClick={() =>
+                      handleAddToCart(product)
+                    }
                   >
                     <ShoppingCart size={18} />
                     Add to Cart
                   </Button>
 
                   
-
                   <div className="mt-3 grid grid-cols-2 gap-2">
 
                     <button
                       type="button"
-                      onClick={() => openEditForm(product)}
+                      onClick={() =>
+                        openEditForm(product)
+                      }
                       className="flex items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2.5 text-sm font-bold text-blue-600 transition hover:bg-blue-100"
                     >
                       <Pencil size={16} />
@@ -527,8 +660,12 @@ export default function Products() {
 
                     <button
                       type="button"
-                      disabled={deletingId === product._id}
-                      onClick={() => handleDelete(product._id)}
+                      disabled={
+                        deletingId === product._id
+                      }
+                      onClick={() =>
+                        handleDelete(product._id)
+                      }
                       className="flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm font-bold text-red-600 transition hover:bg-red-100 disabled:opacity-50"
                     >
                       <Trash2 size={16} />
@@ -545,11 +682,11 @@ export default function Products() {
             ))}
 
           </div>
+
         ) : (
 
-          
-
           <div className="rounded-3xl border border-dashed border-orange-300 bg-white/70 px-4 py-16 text-center shadow-sm">
+
             <PackageOpen
               size={48}
               className="mx-auto text-orange-400"
@@ -568,15 +705,13 @@ export default function Products() {
 
       </section>
 
-    
-
+      
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#14284D]/60 p-4 backdrop-blur-sm">
 
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-orange-100 bg-[#FFFDF8] p-6 shadow-2xl sm:p-8">
 
             
-
             <div className="flex items-center justify-between">
 
               <div>
@@ -595,7 +730,12 @@ export default function Products() {
 
               <button
                 type="button"
-                onClick={() => setShowForm(false)}
+                onClick={() => {
+                  setShowForm(false);
+                  setSelectedImage(null);
+                  setImagePreview("");
+                  setError("");
+                }}
                 className="rounded-full p-2 text-slate-500 transition hover:bg-orange-100 hover:text-orange-600"
               >
                 <X size={22} />
@@ -603,15 +743,13 @@ export default function Products() {
 
             </div>
 
-            
-
+           
             <form
               onSubmit={handleSubmit}
               className="mt-6 space-y-5"
             >
 
               
-
               <div>
                 <label className="mb-2 block text-sm font-bold text-[#14284D]">
                   Toy Name
@@ -628,7 +766,6 @@ export default function Products() {
               </div>
 
               
-
               <div>
                 <label className="mb-2 block text-sm font-bold text-[#14284D]">
                   Description
@@ -645,8 +782,7 @@ export default function Products() {
                 />
               </div>
 
-              
-
+             
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
                 <div>
@@ -683,8 +819,7 @@ export default function Products() {
 
               </div>
 
-              
-
+             
               <div>
                 <label className="mb-2 block text-sm font-bold text-[#14284D]">
                   Category
@@ -698,9 +833,15 @@ export default function Products() {
                   className={inputClass}
                 >
                   {categories
-                    .filter((category) => category !== "All Categories")
+                    .filter(
+                      (category) =>
+                        category !== "All Categories"
+                    )
                     .map((category) => (
-                      <option key={category} value={category}>
+                      <option
+                        key={category}
+                        value={category}
+                      >
                         {category}
                       </option>
                     ))}
@@ -708,34 +849,62 @@ export default function Products() {
               </div>
 
               
-
               <div>
                 <label className="mb-2 block text-sm font-bold text-[#14284D]">
-                  Image URL
+                  Product Image
                 </label>
 
                 <input
-                  type="text"
-                  name="image"
-                  value={formData.image}
-                  onChange={handleInputChange}
-                  required
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleImageChange}
                   className={inputClass}
-                  placeholder="/assets/teddy-bear.jpg"
                 />
 
-                <p className="mt-1 text-xs text-slate-500">
-                  Example: /assets/teddy-bear.jpg
+                <p className="mt-2 text-xs text-slate-500">
+                  JPG, PNG or WebP. Maximum file size: 5 MB.
                 </p>
+
+               
+                {imagePreview && (
+                  <div className="mt-4 rounded-2xl border border-orange-200 bg-orange-50 p-4">
+
+                    <p className="mb-3 text-sm font-bold text-[#14284D]">
+                      Image Preview
+                    </p>
+
+                    <div className="flex justify-center rounded-xl bg-white p-3">
+                      <img
+                        src={imagePreview}
+                        alt="Product preview"
+                        className="h-48 w-full rounded-xl object-contain"
+                      />
+                    </div>
+
+                    {selectedImage && (
+                      <p className="mt-3 text-xs text-slate-600">
+                        Selected:{" "}
+                        <span className="font-semibold">
+                          {selectedImage.name}
+                        </span>
+                      </p>
+                    )}
+
+                  </div>
+                )}
               </div>
 
-              
-
+             
               <div className="flex justify-end gap-3 border-t border-orange-100 pt-5">
 
                 <button
                   type="button"
-                  onClick={() => setShowForm(false)}
+                  onClick={() => {
+                    setShowForm(false);
+                    setSelectedImage(null);
+                    setImagePreview("");
+                    setError("");
+                  }}
                   className="rounded-full border border-orange-200 bg-white px-5 py-3 font-bold text-[#14284D] transition hover:bg-orange-50"
                 >
                   Cancel
@@ -746,7 +915,7 @@ export default function Products() {
                   disabled={saving}
                 >
                   {saving
-                    ? "Saving..."
+                    ? "Uploading & Saving..."
                     : editingProduct
                     ? "Update Product"
                     : "Add Product"}
@@ -755,7 +924,6 @@ export default function Products() {
               </div>
 
             </form>
-
           </div>
         </div>
       )}

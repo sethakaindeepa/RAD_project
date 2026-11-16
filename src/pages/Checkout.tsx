@@ -91,7 +91,7 @@ export default function Checkout() {
   return (
     <section className="min-h-screen bg-linear-to-r from-[#FFF1D9] via-[#FFF8EA] to-[#FFD19B] px-6 py-12 text-[#14284D]">
       <div className="mx-auto max-w-5xl">
-        {/* Page Heading */}
+        
         <div className="mb-8">
           <p className="mb-2 text-sm font-bold uppercase tracking-widest text-orange-500">
             Almost there!
@@ -110,7 +110,7 @@ export default function Checkout() {
           onSubmit={handlePlaceOrder}
           className="grid gap-8 md:grid-cols-2"
         >
-          {/* Delivery Details */}
+          
           <div className="rounded-2xl border border-orange-100 bg-white p-6 shadow-lg shadow-orange-900/5">
             <h2 className="mb-6 text-xl font-extrabold">
               Delivery Details
@@ -176,7 +176,7 @@ export default function Checkout() {
             </p>
           </div>
 
-          {/* Order Summary */}
+          
           <div className="h-fit rounded-2xl border border-orange-100 bg-white p-6 shadow-lg shadow-orange-900/5">
             <h2 className="text-xl font-extrabold">
               Order Summary
