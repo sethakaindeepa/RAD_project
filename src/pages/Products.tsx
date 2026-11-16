@@ -785,20 +785,25 @@ export default function Products() {
              
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
-                <div>
-                  <label className="mb-2 block text-sm font-bold text-[#14284D]">
-                    Price (Rs.)
-                  </label>
+        
 
-                  <input
-                    type="number"
-                    name="price"
-                    value={formData.price}
-                    onChange={handleInputChange}
-                    min="0"
-                    required
-                    className={inputClass}
-                  />
+              <div>
+              <label className="mb-2 block text-sm font-bold text-[#14284D]">
+               Price (Rs.)
+               </label>
+
+               <input
+                type="text"
+                value={formData.price}
+                onChange={(e) =>
+                setFormData({
+                    ...formData,
+                   price: Number(e.target.value),
+                   })
+                  }
+                 placeholder="Enter product price"
+                 className={inputClass}
+                 />
                 </div>
 
                 <div>
