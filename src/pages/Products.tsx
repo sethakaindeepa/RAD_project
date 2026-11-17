@@ -61,7 +61,7 @@ const inputClass =
 export default function Products() {
   const { addToCart } = useCart();
 
-  // User role
+  
   const userRole = localStorage.getItem("role");
   const isAdmin = userRole === "ADMIN";
 
@@ -92,7 +92,7 @@ export default function Products() {
 
   const [imagePreview, setImagePreview] = useState("");
 
-  // Load products
+  
   async function loadProducts() {
     try {
       setLoading(true);
@@ -122,7 +122,7 @@ export default function Products() {
     loadProducts();
   }, []);
 
-  // Clean up image preview URL
+  
   useEffect(() => {
     return () => {
       if (imagePreview.startsWith("blob:")) {
@@ -131,7 +131,7 @@ export default function Products() {
     };
   }, [imagePreview]);
 
-  // Filter and sort products
+  
   const filteredProducts = useMemo(() => {
     let result = products.filter((product) => {
       const matchesSearch = product.name
@@ -174,7 +174,7 @@ export default function Products() {
     sortOption,
   ]);
 
-  // Add product to cart
+  
   function handleAddToCart(product: Product) {
     if ((product.stock ?? 0) <= 0) return;
 
@@ -186,7 +186,7 @@ export default function Products() {
     });
   }
 
-  // Open add product form
+  
   function openAddForm() {
     if (!isAdmin) return;
 
@@ -222,7 +222,7 @@ export default function Products() {
     setShowForm(true);
   }
 
-  // Handle form inputs
+  
   function handleInputChange(
     event: React.ChangeEvent<
       HTMLInputElement |
@@ -241,7 +241,7 @@ export default function Products() {
     }));
   }
 
-  // Handle image selection
+  
   function handleImageChange(
     event: React.ChangeEvent<HTMLInputElement>
   ) {
@@ -285,7 +285,7 @@ export default function Products() {
     setImagePreview(URL.createObjectURL(file));
   }
 
-  // Create or update product
+  
   async function handleSubmit(
     event: React.FormEvent<HTMLFormElement>
   ) {
@@ -358,7 +358,7 @@ export default function Products() {
     }
   }
 
-  // Delete product
+ 
   async function handleDelete(id: string) {
     if (!isAdmin) {
       setError("Access denied. Only administrators can delete products.");
@@ -395,7 +395,7 @@ export default function Products() {
     }
   }
 
-  // Loading screen
+ 
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-linear-to-r from-[#FFF1D9] via-[#FFF8EA] to-[#FFD19B]">
@@ -413,7 +413,7 @@ export default function Products() {
   return (
     <div className="min-h-screen bg-linear-to-r from-[#FFF1D9] via-[#FFF8EA] to-[#FFD19B] text-[#14284D]">
 
-      {/* Hero Section */}
+      
       <section className="relative overflow-hidden border-b border-orange-200/50 bg-transparent px-4 py-12 sm:py-16">
         <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-orange-300/30 blur-3xl" />
 
@@ -435,7 +435,7 @@ export default function Products() {
               </p>
             </div>
 
-            {/* Only ADMIN can add products */}
+            
             {isAdmin && (
               <Button
                 type="button"
@@ -450,7 +450,7 @@ export default function Products() {
         </div>
       </section>
 
-      {/* Error Message */}
+      
       {error && (
         <div className="mx-auto mt-6 max-w-7xl px-4 sm:px-6 lg:px-8">
           <div
@@ -473,10 +473,10 @@ export default function Products() {
         </div>
       )}
 
-      {/* Products Section */}
+     
       <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
 
-        {/* Search and Sort */}
+        
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 
           <div className="relative w-full md:max-w-md">
@@ -527,7 +527,7 @@ export default function Products() {
           </div>
         </div>
 
-        {/* Categories */}
+        
         <div className="mt-7 flex gap-3 overflow-x-auto pb-3">
           {categories.map((category) => (
             <button
@@ -545,7 +545,6 @@ export default function Products() {
           ))}
         </div>
 
-        {/* Product Count */}
         <div className="mb-6 mt-5 flex items-center justify-between">
           <h2 className="text-2xl font-black text-[#14284D]">
             Our Toys
@@ -557,7 +556,7 @@ export default function Products() {
           </p>
         </div>
 
-        {/* Product Cards */}
+        
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 
@@ -567,7 +566,7 @@ export default function Products() {
                 className="group overflow-hidden rounded-3xl border border-orange-100 bg-white shadow-md shadow-slate-900/5 transition duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-orange-300/40"
               >
 
-                {/* Product Image */}
+                
                 <div className="relative flex h-60 items-center justify-center overflow-hidden bg-linear-to-br from-orange-50 to-yellow-50">
 
                   {product.image ? (
@@ -586,7 +585,7 @@ export default function Products() {
                   </span>
                 </div>
 
-                {/* Product Details */}
+                
                 <div className="p-5">
                   <h3 className="min-h-12 text-lg font-extrabold text-[#14284D]">
                     {product.name}
@@ -630,7 +629,7 @@ export default function Products() {
                       : "Out of stock"}
                   </p>
 
-                  {/* Add to Cart - Both roles */}
+                  
                   <Button
                     type="button"
                     disabled={product.stock <= 0}
@@ -641,7 +640,7 @@ export default function Products() {
                     Add to Cart
                   </Button>
 
-                  {/* Edit and Delete - ADMIN only */}
+                  
                   {isAdmin && (
                     <div className="mt-3 grid grid-cols-2 gap-2">
 
@@ -691,13 +690,13 @@ export default function Products() {
         )}
       </section>
 
-      {/* Product Form - ADMIN only */}
+      
       {isAdmin && showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#14284D]/60 p-4 backdrop-blur-sm">
 
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-orange-100 bg-[#FFFDF8] p-6 shadow-2xl sm:p-8">
 
-            {/* Form Header */}
+           
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-black text-[#14284D]">
@@ -725,13 +724,13 @@ export default function Products() {
               </button>
             </div>
 
-            {/* Product Form */}
+           
             <form
               onSubmit={handleSubmit}
               className="mt-6 space-y-5"
             >
 
-              {/* Toy Name */}
+              
               <div>
                 <label className="mb-2 block text-sm font-bold text-[#14284D]">
                   Toy Name
@@ -747,7 +746,7 @@ export default function Products() {
                 />
               </div>
 
-              {/* Description */}
+              
               <div>
                 <label className="mb-2 block text-sm font-bold text-[#14284D]">
                   Description
@@ -764,7 +763,7 @@ export default function Products() {
                 />
               </div>
 
-              {/* Price and Stock */}
+              
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
                 <div>
@@ -802,7 +801,7 @@ export default function Products() {
                 </div>
               </div>
 
-              {/* Category */}
+              
               <div>
                 <label className="mb-2 block text-sm font-bold text-[#14284D]">
                   Category
@@ -827,7 +826,7 @@ export default function Products() {
                 </select>
               </div>
 
-              {/* Product Image */}
+              
               <div>
                 <label className="mb-2 block text-sm font-bold text-[#14284D]">
                   Product Image
@@ -871,7 +870,7 @@ export default function Products() {
                 )}
               </div>
 
-              {/* Form Actions */}
+             
               <div className="flex justify-end gap-3 border-t border-orange-100 pt-5">
 
                 <button
